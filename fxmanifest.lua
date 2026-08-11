@@ -3,8 +3,8 @@ game 'gta5'
 lua54 'yes'
 
 author 'ArmasVIP Contributors'
-description 'Menu VIP de armas con propiedad persistente, asignaciones y proteccion de transferencias'
-version '2.3.0'
+description 'Persistent VIP weapon ownership and management for FiveM'
+version '2.3.1'
 
 ox_lib 'locale'
 

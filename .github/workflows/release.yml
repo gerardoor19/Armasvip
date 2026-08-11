@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build clean FiveM package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install NUI dependencies
+        working-directory: web
+        run: npm install
+
+      - name: Lint NUI
+        working-directory: web
+        run: npm run lint
+
+      - name: Build NUI
+        working-directory: web
+        run: npm run build
+
+      - name: Assemble runtime package
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME}"
+          root="package/armasvip"
+          mkdir -p "$root/web"
+
+          cp fxmanifest.lua LICENSE "$root/"
+          cp -R client config locales server shared sql "$root/"
+          cp -R web/dist "$root/web/dist"
+
+          if find "$root" -type f \( -name '*.md' -o -name '*.ts' -o -name '*.tsx' -o -name '*.tsbuildinfo' -o -name 'package.json' -o -name 'package-lock.json' \) | grep -q .; then
+            echo 'Unexpected development file found in runtime package.' >&2
+            find "$root" -type f | sort
+            exit 1
+          fi
+
+          (cd package && zip -qr "../ArmasVIP-${version}.zip" armasvip)
+          echo 'Runtime package contents:'
+          find "$root" -type f | sort
+
+      - name: Publish GitHub Release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: ArmasVIP-${{ github.ref_name }}.zip

@@ -2,6 +2,18 @@
 
 All notable changes to ArmasVIP are documented here.
 
+## [2.3.1] - 2026-08-12
+
+### Added
+- Full Spanish and English localization for Lua menus, notifications and the React NUI.
+- Localized weapon categories, grant management, recovery messages and VIP item presentation.
+- Automated GitHub Release packaging from version tags.
+
+### Changed
+- The official release ZIP now contains runtime files only: no Markdown documentation, TypeScript source, Node metadata, audit notes or build artifacts.
+- Server owners select the language through `setr ox:locale es` or `setr ox:locale en`.
+- Runtime package creation is allow-list based to prevent development files from leaking into releases.
+
 ## [2.3.0] - 2026-08-11
 
 ### Changed

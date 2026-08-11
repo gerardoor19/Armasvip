@@ -1,0 +1,61 @@
+name: Bug report
+description: Report a reproducible ArmasVIP problem
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Do not include private server credentials, license identifiers, webhooks, database passwords or player personal information.
+  - type: input
+    id: version
+    attributes:
+      label: ArmasVIP version
+      placeholder: v2.3.1
+    validations:
+      required: true
+  - type: dropdown
+    id: locale
+    attributes:
+      label: Locale
+      options:
+        - es
+        - en
+        - other
+    validations:
+      required: true
+  - type: dropdown
+    id: framework
+    attributes:
+      label: Identity environment
+      options:
+        - Qbox
+        - QBCore
+        - ESX
+        - Rockstar license fallback
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem
+      description: Describe what happened and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Start ...
+        2. Run ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Remove all sensitive identifiers and credentials before posting.
+      render: shell

@@ -1,62 +1,49 @@
 Config = {}
 
--- Panel administrativo.
+-- Administrative commands and permission.
 Config.Command = 'armasvip'
 Config.Ace = 'armasvip.admin'
-
--- Menú personal y gestión de asignaciones.
 Config.PlayerCommand = 'misarmasvip'
 Config.ManageCommand = 'armasvipgestionar'
 
--- Munición del callback legacy armasvip:giveWeapon (se conserva por compatibilidad).
+-- Legacy callback ammunition. Kept for backwards compatibility.
 Config.ChamberAmmo = 250
 Config.ReserveAmmo = 250
 
--- Munición del sistema VIP persistente.
--- Reserve=0 evita que /misarmasvip pueda usarse para farmear cajas de munición.
+-- Persistent VIP weapon ammunition.
+-- ReserveAmmoOnEquip = 0 prevents the arsenal from being used to farm ammo boxes.
 Config.VipChamberAmmo = 250
 Config.VipReserveAmmoOnEquip = 0
 
--- Índices de tinte disponibles para todas las armas.
 Config.TintIndexes = { 0, 1, 2, 3, 4, 5, 6, 7 }
 
--- Identidad persistente del propietario.
+-- Persistent owner identity.
 -- auto: qbx_core -> qb-core -> es_extended -> Rockstar license.
--- Se puede forzar: 'qbox', 'qbcore', 'esx' o 'license'.
+-- Can be forced to: 'qbox', 'qbcore', 'esx' or 'license'.
 Config.Identity = {
     Provider = 'auto',
 }
 
 Config.Grants = {
-    -- Duraciones que puede vender/asignar el staff. 0 = permanente.
+    -- Durations available to staff. 0 = permanent.
     DurationOptions = {
-        { days = 0, label = 'Permanente' },
-        { days = 30, label = '30 días' },
-        { days = 90, label = '90 días' },
+        { days = 0, labelKey = 'duration_permanent' },
+        { days = 30, labelKey = 'duration_30_days' },
+        { days = 90, labelKey = 'duration_90_days' },
     },
 
     MaxDurationDays = 3650,
-
-    -- Bloquea transferencias normales de ox_inventory hacia jugadores,
-    -- drops, stashes, trunks, gloveboxes u otros inventarios.
     ProtectTransfers = true,
 
-    -- Presentación exclusiva de las instancias VIP dentro de ox_inventory.
-    -- Solo afecta a items creados por este sistema; un WEAPON_* normal no cambia.
+    -- Presentation applies only to instances created by ArmasVIP.
     ItemPresentation = {
         LabelSuffix = ' [VIP]',
-        Type = 'VIP PERSONAL',
-        Description = 'Arma VIP personal · No transferible · Sin desgaste',
+        Type = locale('vip_item_type'),
+        Description = locale('vip_item_description'),
     },
 
-    -- Las armas VIP no se degradan. Se mantiene la durabilidad del item en 100
-    -- sin modificar la definición base WEAPON_* de ox_inventory.
     InfiniteDurability = true,
     Durability = 100,
-
-    -- Camos/tintes: el 0 (acabado por defecto) siempre está desbloqueado.
     DefaultTintUnlocked = 0,
-
-    -- Revisión periódica de expiraciones.
     ExpiryCheckSeconds = 60,
 }

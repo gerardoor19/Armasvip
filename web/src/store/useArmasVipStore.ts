@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { fetchNui } from '../lib/fivem';
+import type { UiTranslations } from '../lib/i18n';
 import type { ArmasVipPayload, Weapon, WeaponCategory, WeaponComponentMeta, WeaponTint } from '../types';
 
 interface ArmasVipState {
@@ -9,6 +10,7 @@ interface ArmasVipState {
   components: Record<string, WeaponComponentMeta>;
   tints: WeaponTint[];
   imageBase: string;
+  translations: UiTranslations;
   activeCategory: string | null;
   search: string;
   selectedWeapon: Weapon | null;
@@ -34,6 +36,7 @@ export const useArmasVipStore = create<ArmasVipState>((set, get) => ({
   components: {},
   tints: [],
   imageBase: '',
+  translations: {},
   activeCategory: null,
   search: '',
   selectedWeapon: null,
@@ -49,6 +52,7 @@ export const useArmasVipStore = create<ArmasVipState>((set, get) => ({
     components: payload.components,
     tints: payload.tints,
     imageBase: payload.imageBase,
+    translations: payload.translations ?? {},
     activeCategory: payload.categories[0]?.id ?? null,
     search: '',
     selectedWeapon: null,

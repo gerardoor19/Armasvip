@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { fetchNui } from '../lib/fivem';
+import { t } from '../lib/i18n';
+import type { UiTranslations } from '../lib/i18n';
 import type { OwnedActionResponse, OwnedArsenalPayload, OwnedVipGrant, WeaponComponentMeta, WeaponTint } from '../types';
 
 interface OwnedArsenalState {
@@ -9,6 +11,7 @@ interface OwnedArsenalState {
   components: Record<string, WeaponComponentMeta>;
   tints: WeaponTint[];
   imageBase: string;
+  translations: UiTranslations;
   selectedGrantId: number | null;
   pending: boolean;
   lastMessage: { ok: boolean; text: string } | null;
@@ -25,6 +28,7 @@ const applyContext = (context: OwnedArsenalPayload, selectedGrantId: number | nu
   components: context.components,
   tints: context.tints,
   imageBase: context.imageBase,
+  translations: context.translations ?? {},
   selectedGrantId: context.grants.some((g) => g.id === selectedGrantId)
     ? selectedGrantId
     : context.grants[0]?.id ?? null,
@@ -37,6 +41,7 @@ export const useOwnedArsenalStore = create<OwnedArsenalState>((set, get) => ({
   components: {},
   tints: [],
   imageBase: '',
+  translations: {},
   selectedGrantId: null,
   pending: false,
   lastMessage: null,
@@ -50,12 +55,15 @@ export const useOwnedArsenalStore = create<OwnedArsenalState>((set, get) => ({
     set({ pending: true, lastMessage: null });
     const response = await fetchNui<OwnedActionResponse>('armasvip:ownedEquip', { grantId: id });
     const patch = response.context ? applyContext(response.context, id) : {};
+    const translations = response.context?.translations ?? get().translations;
     set({
       ...patch,
       pending: false,
       lastMessage: response.ok
-        ? { ok: true, text: 'Arma retirada y añadida a tu inventario.' }
-        : { ok: false, text: response.reason === 'already_equipped' ? 'Esta arma ya está en tu inventario.' : 'No se pudo retirar el arma.' },
+        ? { ok: true, text: t(translations, 'ui_owned_withdraw_success') }
+        : { ok: false, text: response.reason === 'already_equipped'
+          ? t(translations, 'ui_owned_already_inventory')
+          : t(translations, 'ui_owned_withdraw_failed') },
     });
   },
 
@@ -64,12 +72,15 @@ export const useOwnedArsenalStore = create<OwnedArsenalState>((set, get) => ({
     set({ pending: true, lastMessage: null });
     const response = await fetchNui<OwnedActionResponse>('armasvip:ownedSetTint', { grantId: id, tint });
     const patch = response.context ? applyContext(response.context, id) : {};
+    const translations = response.context?.translations ?? get().translations;
     set({
       ...patch,
       pending: false,
       lastMessage: response.ok
-        ? { ok: true, text: 'Camo aplicado y guardado.' }
-        : { ok: false, text: response.reason === 'tint_locked' ? 'Ese camo todavía está bloqueado.' : 'No se pudo aplicar el camo.' },
+        ? { ok: true, text: t(translations, 'ui_owned_tint_saved') }
+        : { ok: false, text: response.reason === 'tint_locked'
+          ? t(translations, 'ui_owned_tint_locked')
+          : t(translations, 'ui_owned_tint_failed') },
     });
   },
 }));

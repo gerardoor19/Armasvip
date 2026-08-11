@@ -1,6 +1,20 @@
 # Configuration
 
-Configuration lives in `config/config.lua`.
+Configuration lives in `config/config.lua`. Language is selected through the ox_lib locale convar.
+
+## Language
+
+```cfg
+setr ox:locale es
+```
+
+or:
+
+```cfg
+setr ox:locale en
+```
+
+Both `locales/es.json` and `locales/en.json` cover Lua menus, notifications, NUI strings, categories and VIP item presentation.
 
 ## Identity
 
@@ -21,19 +35,18 @@ The default administrative ACE is:
 Config.Ace = 'armasvip.admin'
 ```
 
-Administrative authorization is checked server-side. Do not treat NUI visibility as permission.
+Administrative authorization is checked server-side. NUI visibility is never treated as permission.
 
 ## Persistent grants
 
-Grant duration, transfer protection, VIP item presentation, durability behavior and tint defaults are configurable under `Config.Grants`.
+Key options under `Config.Grants`:
 
-Key options include:
-
-- `DurationOptions` — durations exposed to administrators.
+- `DurationOptions` — durations exposed to administrators using localized label keys.
 - `MaxDurationDays` — maximum accepted finite duration.
 - `ProtectTransfers` — blocks normal transfer of VIP instances through `ox_inventory` hooks.
 - `InfiniteDurability` and `Durability` — instance-level durability behavior.
 - `DefaultTintUnlocked` — base cosmetic entitlement.
 - `ExpiryCheckSeconds` — server-side expiration interval.
+- `ItemPresentation` — instance-only label suffix and localized metadata values.
 
-Keep sensitive credentials outside this file and outside the repository.
+Keep credentials and private identifiers outside the repository.

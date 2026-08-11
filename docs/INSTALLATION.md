@@ -1,26 +1,33 @@
 # Installation
 
+## Recommended installation: GitHub Release
+
+Server owners should download the versioned `ArmasVIP-vX.Y.Z.zip` asset attached to a GitHub Release. The release package already contains the compiled NUI and does **not** require Node.js.
+
+Do not confuse the official release asset with GitHub's automatic `Source code (zip)` archive. Source archives are for development and include repository-only files.
+
 ## Requirements
 
 - `oxmysql`
 - `ox_lib`
 - `ox_inventory`
-- Node.js 20+ to build the NUI from source
 - Optional identity integration: Qbox, QBCore or ESX
 
-## Install
+## Language
 
-Clone or download this repository into your FiveM resources directory and keep the resource folder named `armasvip`.
+Choose one locale in `server.cfg`:
 
-Build the NUI:
-
-```bash
-cd armasvip/web
-npm install
-npm run build
+```cfg
+setr ox:locale es
 ```
 
-Recommended startup order:
+or:
+
+```cfg
+setr ox:locale en
+```
+
+## Startup order
 
 ```cfg
 ensure oxmysql
@@ -32,38 +39,38 @@ ensure armasvip
 
 ## ACE permission
 
-Administrative actions use the `armasvip.admin` ACE.
+Administrative actions use `armasvip.admin`:
 
 ```cfg
 add_ace group.admin armasvip.admin allow
 ```
 
-Or assign it to a dedicated group:
+Or use a dedicated group:
 
 ```cfg
 add_ace group.armasvip armasvip.admin allow
 add_principal identifier.license:YOUR_LICENSE group.armasvip
 ```
 
-Replace the example identifier in your private `server.cfg`. Do not commit real player identifiers to a public repository.
+Replace the example identifier only in your private `server.cfg`. Never commit real player identifiers to a public repository.
 
 ## Database
 
-Import `sql/install.sql` if you prefer manual schema installation. The resource also contains migration/bootstrap logic for its required tables.
+Import `sql/install.sql` if you prefer manual schema installation. ArmasVIP also includes safe bootstrap/migration logic for its required tables.
 
 ## Commands
 
 - `/armasvip` — administrative assignment UI (ACE protected)
 - `/misarmasvip` — personal VIP arsenal
-- `/armasvipgestionar` — grant management
+- `/armasvipgestionar` — persistent grant management
 
-## Updating the NUI
+## Development installation
 
-After changing files under `web/src`, rebuild before restarting the resource:
+Only developers working on the NUI need Node.js 20+:
 
 ```bash
-cd web
+cd armasvip/web
+npm install
+npm run lint
 npm run build
 ```
-
-The generated `web/dist` directory is intentionally excluded from the development branch.

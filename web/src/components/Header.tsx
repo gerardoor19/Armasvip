@@ -1,9 +1,11 @@
 import { X, Crown } from 'lucide-react';
 import { fetchNui } from '../lib/fivem';
+import { t } from '../lib/i18n';
 import { useArmasVipStore } from '../store/useArmasVipStore';
 
 export function Header() {
   const close = useArmasVipStore((s) => s.close);
+  const translations = useArmasVipStore((s) => s.translations);
 
   const handleClose = () => {
     void fetchNui('armasvip:close');
@@ -18,10 +20,10 @@ export function Header() {
         </div>
         <div>
           <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-vip-accent-soft">
-            Arsenal exclusivo
+            {t(translations, 'ui_exclusive_arsenal')}
           </span>
           <h1 className="text-[26px] leading-none tracking-[-0.04em] text-vip-text">
-            Armas <span className="text-vip-accent-soft">VIP</span>
+            {t(translations, 'ui_weapons')} <span className="text-vip-accent-soft">VIP</span>
           </h1>
         </div>
       </div>
@@ -29,7 +31,7 @@ export function Header() {
       <button
         onClick={handleClose}
         className="flex h-9 w-9 items-center justify-center rounded-lg border border-vip-border bg-vip-panel-2 text-vip-muted transition-colors hover:border-red-500/50 hover:text-red-400"
-        aria-label="Cerrar"
+        aria-label={t(translations, 'ui_close')}
       >
         <X className="h-4 w-4" />
       </button>

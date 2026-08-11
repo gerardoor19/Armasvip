@@ -1,0 +1,17 @@
+{
+    "notify_title": "Armas VIP",
+    "no_permission": "No tienes permiso para usar este menu.",
+    "invalid_weapon": "Arma invalida.",
+    "give_failed": "No se pudo entregar el arma: %s",
+    "give_failed_reason_full": "inventario lleno",
+    "given": "Recibiste %s con %s accesorio(s).",
+    "console_only": "Usa /%s dentro del juego.",
+    "tint_0": "Estandar",
+    "tint_1": "Verde",
+    "tint_2": "Dorado",
+    "tint_3": "Rosa",
+    "tint_4": "Militar",
+    "tint_5": "Policial",
+    "tint_6": "Naranja",
+    "tint_7": "Platino"
+}

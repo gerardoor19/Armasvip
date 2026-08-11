@@ -1,0 +1,17 @@
+{
+    "notify_title": "VIP Weapons",
+    "no_permission": "You don't have permission to use this menu.",
+    "invalid_weapon": "Invalid weapon.",
+    "give_failed": "Could not deliver the weapon: %s",
+    "give_failed_reason_full": "inventory full",
+    "given": "You received %s with %s accessory(ies).",
+    "console_only": "Use /%s in-game.",
+    "tint_0": "Standard",
+    "tint_1": "Green",
+    "tint_2": "Gold",
+    "tint_3": "Pink",
+    "tint_4": "Military",
+    "tint_5": "Police",
+    "tint_6": "Orange",
+    "tint_7": "Platinum"
+}

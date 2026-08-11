@@ -1,56 +1,31 @@
-# Seguridad
+# Security
 
-## Principio principal
+ArmasVIP uses a server-authoritative model for privileged and ownership-sensitive operations.
 
-ArmasVIP es server-authoritative. El cliente se considera manipulable. Ninguna acción sensible confía en valores del cliente sin revalidarlos en servidor.
+The NUI and client are not authorization boundaries. Administrative actions must pass ACE validation on the server, and player operations are validated against persistent grant ownership and current inventory state.
 
-## Panel administrativo
+## Trust boundaries
 
-Abrir `/armasvip` requiere el ACE configurado en `Config.Permissions.AdminAce`. Los callbacks administrativos vuelven a comprobar el ACE. Forzar la NUI desde un executor no concede permisos.
+The server revalidates sensitive requests using server-side state where applicable, including:
 
-## Usuario sin arma VIP
+- administrative ACE permission;
+- persistent player identity;
+- grant existence and active status;
+- grant owner;
+- weapon associated with the grant;
+- VIP metadata and `vipGrantId`;
+- current inventory instance state;
+- cosmetic entitlement;
+- duplicate recovery attempts.
 
-`/misarmasvip` comprueba en servidor si la identidad tiene un grant activo antes de abrir el menú.
+Transfer protection is registered through the supported `ox_inventory` hook system rather than by modifying the inventory resource.
 
-Incluso si un usuario fuerza la NUI o llama callbacks manualmente:
+## Public deployment guidance
 
-- `equipGrant` recibe solo un `grantId`;
-- el servidor obtiene la identidad desde `source`;
-- comprueba que el grant activo pertenece a esa identidad;
-- revalida en SQL antes de crear el item;
-- valida el arma contra el dataset del recurso;
-- evita una segunda instancia del mismo grant.
+- Do not place database credentials, webhooks, API tokens or private identifiers in this resource.
+- Keep database credentials in your private server configuration/environment, not in Git.
+- Never commit production database dumps or player identifier lists.
+- Review changes before deployment and test on a development server.
+- Keep dependencies sourced from their official projects and update deliberately.
 
-Un ID de grant inventado o perteneciente a otra persona no entrega nada.
-
-## Camos
-
-El cliente solo solicita `grantId + tint`. El servidor verifica propietario, grant activo, índice permitido y desbloqueo real en `armasvip_cosmetics`/cache.
-
-## Accesorios
-
-Los componentes recibidos desde el panel admin se filtran contra los componentes compatibles definidos para esa arma. Los accesorios no son un derecho regenerable después de la primera entrega.
-
-## Transferencias
-
-La instancia VIP lleva metadata propia, entre ella:
-
-- `armasvip = true`
-- `vipGrantId`
-- `vipOwner`
-
-El hook `swapItems` de `ox_inventory` cancela transferencias normales fuera del inventario propietario. Un arma normal con el mismo `WEAPON_*` no contiene esa metadata y no queda protegida por ArmasVIP.
-
-## Durabilidad
-
-La reparación server-side valida metadata VIP, grant esperado, propietario, arma correspondiente y rate limit. No puede utilizarse el evento de reparación para reparar un arma normal.
-
-## Anti-spam
-
-Los callbacks de administración, estado, retirada y tintes tienen rate limit por jugador. Una petición de retirada con un `grantId` ajeno se rechaza antes de la revalidación SQL.
-
-## Límites de seguridad
-
-ArmasVIP no puede corregir vulnerabilidades de otros recursos. Si otro script inseguro permite a un cliente ejecutar arbitrariamente `AddItem`, `RemoveItem`, modificar SQL o ejecutar código server-side, debe corregirse ese recurso.
-
-La propiedad SQL de ArmasVIP sigue siendo independiente de la existencia momentánea del item físico.
+If you discover a security issue, avoid publishing actionable exploitation details in a public issue before maintainers have had an opportunity to review it.

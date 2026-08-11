@@ -1,11 +1,11 @@
-export const componentTypeLabels: Record<string, string> = {
-  magazine: 'Cargador',
-  flashlight: 'Linterna',
-  muzzle: 'Supresor',
-  grip: 'Empunadura',
-  barrel: 'Canon',
-  sight: 'Mira',
-  skin: 'Acabado',
+export const componentTypeTranslationKeys: Record<string, string> = {
+  magazine: 'ui_component_magazine',
+  flashlight: 'ui_component_flashlight',
+  muzzle: 'ui_component_muzzle',
+  grip: 'ui_component_grip',
+  barrel: 'ui_component_barrel',
+  sight: 'ui_component_sight',
+  skin: 'ui_component_skin',
 };
 
 export const componentTypeOrder = ['magazine', 'muzzle', 'sight', 'grip', 'barrel', 'flashlight', 'skin'];

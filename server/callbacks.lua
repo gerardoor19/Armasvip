@@ -82,29 +82,22 @@ lib.callback.register('armasvip:createGrant', function(source, payload)
     local delivered, deliveryResult = ArmasVipGrants.Equip(target, result.id)
 
     if delivered then
-        notify(source, ('Arma VIP asignada y entregada a %s.'):format(result.ownerName or GetPlayerName(target)), 'success')
-        notify(target, ('%s ahora es tu arma VIP y ya fue añadida a tu inventario.'):format(result.label), 'success')
+        notify(source, locale('grant_assigned_delivered', result.ownerName or GetPlayerName(target)), 'success')
+        notify(target, locale('grant_received', result.label), 'success')
     else
-        local deliveryMessages = {
-            inventory_full = 'No tiene espacio en el inventario.',
-            already_equipped = 'Ya existe una instancia de esta asignación en su inventario.',
-            invalid_identity = 'No se pudo identificar al jugador.',
-            invalid_weapon = 'La asignación contiene un arma inválida.',
-            database_not_ready = 'El sistema VIP todavía está iniciando.',
-            grant_busy = 'La asignación está siendo procesada.',
-            grant_not_found = 'No se pudo revalidar la asignación recién creada.',
+        local deliveryKeys = {
+            inventory_full = 'delivery_inventory_full',
+            already_equipped = 'delivery_already_equipped',
+            invalid_identity = 'delivery_invalid_identity',
+            invalid_weapon = 'delivery_invalid_weapon',
+            database_not_ready = 'delivery_database_not_ready',
+            grant_busy = 'delivery_grant_busy',
+            grant_not_found = 'delivery_grant_not_found',
         }
-        local detail = deliveryMessages[deliveryResult] or ('Entrega física fallida: %s'):format(tostring(deliveryResult))
+        local detail = deliveryKeys[deliveryResult] and locale(deliveryKeys[deliveryResult]) or locale('delivery_failed_reason', tostring(deliveryResult))
 
-        notify(source, ('La propiedad VIP fue guardada para %s, pero no se pudo entregar ahora: %s'):format(
-            result.ownerName or GetPlayerName(target),
-            detail
-        ), 'warning')
-        notify(target, ('%s ya es tu arma VIP. No pudo añadirse ahora (%s). Usa /%s para recuperarla.'):format(
-            result.label,
-            detail,
-            Config.PlayerCommand
-        ), 'warning')
+        notify(source, locale('grant_saved_delivery_failed', result.ownerName or GetPlayerName(target), detail), 'warning')
+        notify(target, locale('grant_owned_delivery_failed', result.label, detail, Config.PlayerCommand), 'warning')
     end
 
     return {
@@ -129,7 +122,7 @@ lib.callback.register('armasvip:revokeGrant', function(source, id)
     if not ok then return { ok = false, reason = reason } end
 
     if target then
-        notify(target, ('Tu acceso VIP a %s fue revocado.'):format(label), 'error')
+        notify(target, locale('grant_access_revoked', label), 'error')
     end
 
     return { ok = true }
@@ -149,21 +142,21 @@ end)
 lib.callback.register('armasvip:equipGrant', function(source, grantId)
     local ok, result = ArmasVipGrants.Equip(source, grantId)
     if not ok then
-        local messages = {
-            grant_not_found = 'Esta asignación no existe, expiró o no te pertenece.',
-            already_equipped = 'Ya tienes esta arma VIP en tu inventario.',
-            inventory_full = 'No tienes espacio suficiente en el inventario.',
-            invalid_identity = 'No se pudo identificar tu personaje.',
-            database_not_ready = 'El sistema VIP aún está iniciando.',
-            invalid_weapon = 'La asignación contiene un arma inválida.',
-            grant_busy = 'Esta arma VIP ya se está procesando. Inténtalo de nuevo.',
+        local messageKeys = {
+            grant_not_found = 'equip_grant_not_found',
+            already_equipped = 'equip_already_equipped',
+            inventory_full = 'equip_inventory_full',
+            invalid_identity = 'equip_invalid_identity',
+            database_not_ready = 'equip_database_not_ready',
+            invalid_weapon = 'equip_invalid_weapon',
+            grant_busy = 'equip_grant_busy',
         }
 
-        notify(source, messages[result] or 'No se pudo equipar el arma VIP.', 'error')
+        notify(source, messageKeys[result] and locale(messageKeys[result]) or locale('equip_failed'), 'error')
         return { ok = false, reason = result }
     end
 
-    notify(source, ('%s equipada.'):format(result.label), 'success')
+    notify(source, locale('weapon_equipped', result.label), 'success')
     return { ok = true, grant = result }
 end)
 
@@ -179,15 +172,15 @@ lib.callback.register('armasvip:setActiveTint', function(source, payload)
     if type(payload) ~= 'table' then return { ok = false, reason = 'invalid_payload' } end
     local ok, result = ArmasVipGrants.SetActiveTint(source, payload.grantId, payload.tint)
     if not ok then
-        local messages = {
-            grant_not_found = 'Esta arma VIP no te pertenece o ya no está activa.',
-            tint_locked = 'Ese camo no está desbloqueado para esta arma.',
-            invalid_identity = 'No se pudo identificar tu personaje.',
+        local messageKeys = {
+            grant_not_found = 'tint_grant_not_found',
+            tint_locked = 'tint_locked_for_weapon',
+            invalid_identity = 'equip_invalid_identity',
         }
-        notify(source, messages[result] or 'No se pudo cambiar el camo.', 'error')
+        notify(source, messageKeys[result] and locale(messageKeys[result]) or locale('tint_change_failed'), 'error')
         return { ok = false, reason = result }
     end
-    notify(source, 'Camo aplicado y guardado.', 'success')
+    notify(source, locale('tint_applied_saved'), 'success')
     return { ok = true, grant = result }
 end)
 

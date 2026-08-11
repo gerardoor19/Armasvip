@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Crosshair, Loader2, Sparkles } from 'lucide-react';
 import { useArmasVipStore } from '../store/useArmasVipStore';
-import { componentTypeLabels, componentTypeOrder, tintColors } from '../lib/constants';
+import { componentTypeOrder, componentTypeTranslationKeys, tintColors } from '../lib/constants';
+import { t } from '../lib/i18n';
 
 export function WeaponDetail() {
   const selectedWeapon = useArmasVipStore((s) => s.selectedWeapon);
@@ -17,6 +18,7 @@ export function WeaponDetail() {
   const isEquipping = useArmasVipStore((s) => s.isEquipping);
   const lastResult = useArmasVipStore((s) => s.lastResult);
   const equip = useArmasVipStore((s) => s.equip);
+  const translations = useArmasVipStore((s) => s.translations);
   const [imgError, setImgError] = useState(false);
 
   const groupedComponents = useMemo(() => {
@@ -39,7 +41,10 @@ export function WeaponDetail() {
     return (
       <div className="flex w-80 shrink-0 flex-col items-center justify-center gap-3 border-l border-vip-border p-6 text-center">
         <span className="flex h-11 w-11 items-center justify-center rounded-full bg-vip-panel-2 text-vip-muted"><Sparkles className="h-5 w-5" /></span>
-        <div><p className="text-sm font-medium text-vip-text">Ningún arma seleccionada</p><p className="mt-1 text-xs text-vip-muted">Elegí un arma para ver sus accesorios y personalizarla.</p></div>
+        <div>
+          <p className="text-sm font-medium text-vip-text">{t(translations, 'ui_no_weapon_selected')}</p>
+          <p className="mt-1 text-xs text-vip-muted">{t(translations, 'ui_select_weapon_hint')}</p>
+        </div>
       </div>
     );
   }
@@ -47,7 +52,7 @@ export function WeaponDetail() {
   return (
     <motion.aside key={selectedWeapon.name} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.18 }} className="flex w-80 shrink-0 flex-col border-l border-vip-border p-5">
       <div className="relative flex h-32 items-center justify-center overflow-hidden rounded-xl bg-vip-panel-2/60">
-        <div className="pointer-events-none absolute top-0 right-0 bottom-0 left-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,122,0,0.1),transparent_65%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,122,0,0.1),transparent_65%)]" />
         {imgError ? <Crosshair className="h-12 w-12 text-vip-muted" /> : (
           <img src={`${imageBase}${selectedWeapon.name}.png`} alt={selectedWeapon.label} className="relative h-32 max-w-full object-contain drop-shadow-[0_6px_16px_rgba(0,0,0,0.6)]" onError={() => setImgError(true)} draggable={false} />
         )}
@@ -56,9 +61,11 @@ export function WeaponDetail() {
       <p className="text-center text-[11px] uppercase tracking-wide text-vip-cyan/80">{categoryLabel}</p>
 
       <div className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1">
-        {groupedComponents.length === 0 ? <p className="text-center text-xs text-vip-muted">Esta arma no tiene accesorios.</p> : groupedComponents.map(({ type, items }) => (
+        {groupedComponents.length === 0 ? <p className="text-center text-xs text-vip-muted">{t(translations, 'ui_no_components')}</p> : groupedComponents.map(({ type, items }) => (
           <div key={type}>
-            <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-vip-muted">{componentTypeLabels[type] ?? type}</h3>
+            <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-vip-muted">
+              {t(translations, componentTypeTranslationKeys[type] ?? 'ui_component_other', type)}
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {items.map((name) => {
                 const isActive = selectedComponents.includes(name);
@@ -73,7 +80,7 @@ export function WeaponDetail() {
         ))}
 
         <div>
-          <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-vip-muted">Tinte</h3>
+          <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-vip-muted">{t(translations, 'ui_tint')}</h3>
           <div className="flex flex-wrap gap-2">
             {tints.map((tint) => (
               <button key={tint.index} onClick={() => setTint(tint.index)} title={tint.label} className={`relative flex h-6 w-6 items-center justify-center rounded-full border-2 transition-transform ${selectedTint === tint.index ? 'scale-110 border-vip-accent' : 'border-vip-border hover:scale-105'}`} style={{ backgroundColor: tintColors[tint.index] ?? '#6b7280' }}>
@@ -87,13 +94,14 @@ export function WeaponDetail() {
       <AnimatePresence>
         {lastResult && (
           <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`mb-2 rounded-lg px-3 py-2 text-xs ${lastResult.ok ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'}`}>
-            {lastResult.ok ? `${lastResult.label} seleccionada para asignar.` : 'No se pudo procesar la selección.'}
+            {lastResult.ok ? `${lastResult.label} ${t(translations, 'ui_selection_success')}` : t(translations, 'ui_selection_failed')}
           </motion.div>
         )}
       </AnimatePresence>
 
       <button onClick={() => void equip()} disabled={isEquipping} className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-b from-[#ff8a00] to-[#ff6a00] py-3 text-sm font-bold uppercase tracking-wide text-white shadow-[0_10px_30px_rgba(255,115,0,0.2)] transition-all duration-150 hover:-translate-y-px hover:brightness-110 disabled:translate-y-0 disabled:opacity-60 disabled:hover:brightness-100">
-        {isEquipping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}{isEquipping ? 'Abriendo asignación...' : 'Asignar arma VIP'}
+        {isEquipping ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+        {isEquipping ? t(translations, 'ui_opening_assignment') : t(translations, 'ui_assign_weapon')}
       </button>
     </motion.aside>
   );

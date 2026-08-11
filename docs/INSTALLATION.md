@@ -1,63 +1,69 @@
-# Instalación
+# Installation
 
-## Requisitos
+## Requirements
 
-ArmasVIP requiere:
+- `oxmysql`
+- `ox_lib`
+- `ox_inventory`
+- Node.js 20+ to build the NUI from source
+- Optional identity integration: Qbox, QBCore or ESX
 
-1. `oxmysql`
-2. `ox_lib`
-3. `ox_inventory`
+## Install
 
-El framework es opcional. La identidad se detecta en este orden cuando `Config.Identity.Provider = 'auto'`:
+Clone or download this repository into your FiveM resources directory and keep the resource folder named `armasvip`.
 
-1. `qbx_core`
-2. `qb-core`
-3. `es_extended`
-4. Rockstar license
+Build the NUI:
 
-## Orden recomendado en server.cfg
+```bash
+cd armasvip/web
+npm install
+npm run build
+```
+
+Recommended startup order:
 
 ```cfg
 ensure oxmysql
 ensure ox_lib
-# inicia aquí tu framework si aplica
+# ensure your framework here when applicable
 ensure ox_inventory
 ensure armasvip
 ```
 
-## Permiso del dueño/admin
+## ACE permission
 
-ArmasVIP no tiene una lista interna de administradores. FiveM ACE es la autoridad.
-
-```cfg
-add_ace group.armasvip armasvip.admin allow
-add_principal identifier.license:TU_LICENSE group.armasvip
-```
-
-También puedes conceder el ACE a un grupo que ya administres:
+Administrative actions use the `armasvip.admin` ACE.
 
 ```cfg
 add_ace group.admin armasvip.admin allow
 ```
 
-No concedas `armasvip.admin` a grupos de usuarios normales.
+Or assign it to a dedicated group:
 
-## Base de datos
+```cfg
+add_ace group.armasvip armasvip.admin allow
+add_principal identifier.license:YOUR_LICENSE group.armasvip
+```
 
-El recurso intenta crear/migrar sus tablas al iniciar mediante `oxmysql`. Si prefieres instalación manual, ejecuta `sql/install.sql` desde el paquete oficial protegido.
+Replace the example identifier in your private `server.cfg`. Do not commit real player identifiers to a public repository.
 
-Tablas utilizadas por la versión 2.2.0:
+## Database
 
-- `armasvip_grants`
-- `armasvip_cosmetics`
+Import `sql/install.sql` if you prefer manual schema installation. The resource also contains migration/bootstrap logic for its required tables.
 
-## Primera prueba
+## Commands
 
-1. Reinicia `armasvip`.
-2. Confirma en consola que cargó los grants activos.
-3. Entra con una cuenta que tenga el ACE.
-4. Ejecuta `/armasvip`.
-5. Asigna un arma a un jugador conectado.
-6. Verifica que se entregue inmediatamente.
-7. Con ese jugador ejecuta `/misarmasvip`.
-8. Verifica que una segunda retirada no duplique el mismo grant.
+- `/armasvip` — administrative assignment UI (ACE protected)
+- `/misarmasvip` — personal VIP arsenal
+- `/armasvipgestionar` — grant management
+
+## Updating the NUI
+
+After changing files under `web/src`, rebuild before restarting the resource:
+
+```bash
+cd web
+npm run build
+```
+
+The generated `web/dist` directory is intentionally excluded from the development branch.

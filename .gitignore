@@ -1,0 +1,24 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node / NUI
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local/private files
+.env
+.env.*
+!.env.example
+*.local
+
+# Archives
+*.zip
+*.7z
+*.rar

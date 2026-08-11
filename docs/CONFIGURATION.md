@@ -1,58 +1,39 @@
-# Configuración
+# Configuration
 
-La configuración pública del paquete 2.2.0 está en `config/config.lua`.
+Configuration lives in `config/config.lua`.
 
-## Permisos
+## Identity
+
+`Config.Identity.Provider = 'auto'` resolves identity in this order:
+
+1. Qbox (`qbx_core`)
+2. QBCore (`qb-core`)
+3. ESX (`es_extended`)
+4. Rockstar license fallback
+
+You can force `qbox`, `qbcore`, `esx` or `license` when required.
+
+## Permissions
+
+The default administrative ACE is:
 
 ```lua
-Config.Permissions = {
-    AdminAce = 'armasvip.admin',
-    AllowConsole = true,
-}
+Config.Ace = 'armasvip.admin'
 ```
 
-`AdminAce` es el permiso que abre el panel administrativo. La asignación real vuelve a comprobar el mismo ACE en servidor.
+Administrative authorization is checked server-side. Do not treat NUI visibility as permission.
 
-## Identidad
+## Persistent grants
 
-```lua
-Config.Identity = {
-    Provider = 'auto',
-}
-```
+Grant duration, transfer protection, VIP item presentation, durability behavior and tint defaults are configurable under `Config.Grants`.
 
-Valores disponibles:
+Key options include:
 
-- `auto`
-- `qbox`
-- `qbcore`
-- `esx`
-- `license`
+- `DurationOptions` — durations exposed to administrators.
+- `MaxDurationDays` — maximum accepted finite duration.
+- `ProtectTransfers` — blocks normal transfer of VIP instances through `ox_inventory` hooks.
+- `InfiniteDurability` and `Durability` — instance-level durability behavior.
+- `DefaultTintUnlocked` — base cosmetic entitlement.
+- `ExpiryCheckSeconds` — server-side expiration interval.
 
-En servidores con personajes, se recomienda usar el framework real para que la propiedad quede asociada al personaje correcto.
-
-## Grants
-
-`AllowDuplicateWeaponGrants = false` evita dos grants activos del mismo `WEAPON_*` para el mismo propietario.
-
-`DurationOptions` controla las duraciones visibles para el admin. `days = 0` significa permanente.
-
-## Transferencias
-
-`ProtectTransfers = true` cancela mediante `ox_inventory` los movimientos normales de una instancia VIP hacia otro jugador, drop, stash, trunk, glovebox u otro inventario.
-
-No modifica las armas normales del mismo nombre.
-
-## Durabilidad
-
-`InfiniteDurability = true` mantiene en 100 únicamente las instancias cuya metadata pertenece a un grant VIP válido.
-
-## Munición
-
-`VipChamberAmmo` es la munición inicial de la instancia recuperada.
-
-`VipReserveAmmoOnEquip = 0` evita utilizar el arsenal personal para farmear cajas de munición.
-
-## Rate limits
-
-`Config.Security.RateLimits` limita la frecuencia de callbacks sensibles. No es la seguridad principal; la seguridad real sigue siendo la validación server-side.
+Keep sensitive credentials outside this file and outside the repository.

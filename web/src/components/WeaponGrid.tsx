@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { PackageSearch } from 'lucide-react';
+import { t } from '../lib/i18n';
 import { useArmasVipStore } from '../store/useArmasVipStore';
 import { WeaponCard } from './WeaponCard';
 
@@ -11,11 +12,9 @@ export function WeaponGrid() {
   const categories = useArmasVipStore((s) => s.categories);
   const selectedWeapon = useArmasVipStore((s) => s.selectedWeapon);
   const selectWeapon = useArmasVipStore((s) => s.selectWeapon);
+  const translations = useArmasVipStore((s) => s.translations);
 
-  const categoryLabels = useMemo(
-    () => Object.fromEntries(categories.map((c) => [c.id, c.label])),
-    [categories],
-  );
+  const categoryLabels = useMemo(() => Object.fromEntries(categories.map((c) => [c.id, c.label])), [categories]);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -31,8 +30,8 @@ export function WeaponGrid() {
       <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-vip-muted">
         <PackageSearch className="h-6 w-6" />
         <div>
-          <p className="text-sm font-medium text-vip-text">No se encontraron armas.</p>
-          <p className="mt-1 text-xs text-vip-muted">Prueba otra búsqueda o categoría.</p>
+          <p className="text-sm font-medium text-vip-text">{t(translations, 'ui_empty_title')}</p>
+          <p className="mt-1 text-xs text-vip-muted">{t(translations, 'ui_empty_subtitle')}</p>
         </div>
       </div>
     );

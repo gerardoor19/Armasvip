@@ -1,3 +1,5 @@
+import type { UiTranslations } from './lib/i18n';
+
 export interface WeaponCategory {
   id: string;
   label: string;
@@ -29,6 +31,7 @@ export interface ArmasVipPayload {
   components: Record<string, WeaponComponentMeta>;
   tints: WeaponTint[];
   imageBase: string;
+  translations: UiTranslations;
 }
 
 export interface EquipRequest {
@@ -59,6 +62,7 @@ export interface OwnedArsenalPayload {
   components: Record<string, WeaponComponentMeta>;
   tints: WeaponTint[];
   imageBase: string;
+  translations: UiTranslations;
 }
 
 export interface OwnedActionResponse {

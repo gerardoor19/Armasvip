@@ -4,7 +4,7 @@
 
 ### Persistent VIP Weapon Ownership for FiveM
 
-**Open-source, server-authoritative VIP weapon grants with persistent ownership, protected recovery and a dedicated NUI arsenal.**
+**Open-source · Server-authoritative · ES/EN · Install-ready GitHub Releases**
 
 ![Version](https://img.shields.io/badge/version-2.3.1-orange)
 ![FiveM](https://img.shields.io/badge/platform-FiveM-blue)
@@ -19,42 +19,34 @@
 
 ## Overview
 
-ArmasVIP separates **persistent ownership** from the temporary weapon item stored in `ox_inventory`. Authorized staff assign a specific VIP weapon to a player, creating a persistent grant. If the physical item is lost, the grant remains and recovery is allowed only after server-side validation.
+ArmasVIP provides persistent VIP weapon ownership for FiveM. Authorized staff assign a specific VIP weapon to a player, creating a persistent server-side grant. The physical `ox_inventory` item can be lost or removed while the ownership grant remains available for validated recovery.
+
+The project is fully open source and distributed through clean, versioned GitHub Release packages.
 
 ## Features
 
 - Persistent SQL-backed VIP weapon grants
-- ACE-protected administrative UI
+- ACE-protected administrative interface
 - Personal `/misarmasvip` arsenal
 - Anti-duplication recovery validation
 - Per-instance VIP metadata instead of global weapon overrides
 - Transfer protection through `ox_inventory` hooks
-- VIP durability handling without changing normal copies of the same weapon
+- VIP durability handling without modifying normal copies of the same weapon
 - Persistent tint/camo entitlement validation
 - Qbox, QBCore, ESX and Rockstar-license identity support
-- React + TypeScript NUI with source included
+- React + TypeScript NUI source included in the repository
 - Full Spanish and English localization
-- Automated clean GitHub Release packages
+- Automated runtime-only GitHub Release packages
 
-## Languages
+## Download & install
 
-ArmasVIP ships with complete Spanish and English localization. Select the server language in `server.cfg`:
+> **Server owners do not need Node.js, npm or a frontend build step.**
 
-```cfg
-# Spanish
-setr ox:locale es
-```
+Download the versioned asset from **GitHub Releases**:
 
-```cfg
-# English
-setr ox:locale en
-```
+**`ArmasVIP-v2.3.1.zip`**
 
-Lua menus, notifications, categories, NUI labels, grant management and VIP item presentation follow the selected locale.
-
-## Download
-
-For a FiveM server, use the **versioned ZIP attached to GitHub Releases**:
+The official asset already includes the compiled NUI and is ready to place in your FiveM resources directory.
 
 ```text
 ArmasVIP-v2.3.1.zip
@@ -70,7 +62,47 @@ ArmasVIP-v2.3.1.zip
     └── web/dist/
 ```
 
-The release asset is generated automatically and contains runtime files only. GitHub's automatic **Source code** archives are intended for development and include repository documentation and NUI source.
+Do **not** use GitHub's automatically generated `Source code (zip)` as the normal server package. Those archives contain the development repository, documentation and NUI source.
+
+### Requirements
+
+- `oxmysql`
+- `ox_lib`
+- `ox_inventory`
+- Qbox, QBCore or ESX are optional identity integrations
+
+### server.cfg
+
+Choose the language:
+
+```cfg
+# Español
+setr ox:locale es
+```
+
+or:
+
+```cfg
+# English
+setr ox:locale en
+```
+
+Grant administrative access and start the resources in order:
+
+```cfg
+add_ace group.admin armasvip.admin allow
+
+ensure oxmysql
+ensure ox_lib
+ensure ox_inventory
+ensure armasvip
+```
+
+Full setup: **[Installation Guide](docs/INSTALLATION.md)**.
+
+## Languages
+
+ArmasVIP includes complete Spanish and English localization. The selected `ox:locale` controls Lua menus, notifications, weapon categories, grant management, NUI labels, camos/tints and VIP item presentation.
 
 ## Showcase
 
@@ -86,51 +118,25 @@ The release asset is generated automatically and contains runtime files only. Gi
 
 <img width="100%" alt="ArmasVIP customization" src="https://github.com/user-attachments/assets/b92798b8-cfb7-4e08-97b7-2d749fdbb420" />
 
-## Requirements
+## Commands
 
-- `oxmysql`
-- `ox_lib`
-- `ox_inventory`
-
-## Installation
-
-1. Download the versioned `ArmasVIP-vX.Y.Z.zip` asset from **Releases**.
-2. Extract the included `armasvip` folder into your FiveM resources directory.
-3. Configure the language and administrative ACE.
-4. Start dependencies before ArmasVIP.
-
-```cfg
-setr ox:locale en
-
-add_ace group.admin armasvip.admin allow
-
-ensure oxmysql
-ensure ox_lib
-ensure ox_inventory
-ensure armasvip
-```
-
-See **[docs/INSTALLATION.md](docs/INSTALLATION.md)** for the complete setup.
-
-## Development
-
-Developers can clone the repository and build the NUI from source:
-
-```bash
-git clone https://github.com/gerardoor19/Armasvip.git armasvip
-cd armasvip/web
-npm install
-npm run lint
-npm run build
-```
-
-`web/dist` is generated output and is intentionally excluded from the development tree. Tagged releases build it automatically.
+| Command | Purpose |
+|---|---|
+| `/armasvip` | Administrative VIP weapon assignment |
+| `/misarmasvip` | Personal VIP arsenal |
+| `/armasvipgestionar` | Persistent grant management |
 
 ## Security model
 
-The server is authoritative. NUI visibility is not authorization. Sensitive operations validate ACE permissions, player identity, grant ownership, weapon association and inventory state on the server.
+The server is authoritative. NUI visibility is never treated as authorization. Sensitive operations validate ACE permissions, player identity, grant ownership, weapon association and inventory state server-side.
 
-See **[docs/SECURITY.md](docs/SECURITY.md)**.
+See **[Security Model](docs/SECURITY.md)**.
+
+## Development
+
+The repository contains the editable React/TypeScript NUI source. Building the frontend is required **only for contributors who modify the NUI**, never for normal server installation.
+
+See **[Development Guide](docs/DEVELOPMENT.md)**.
 
 ## Documentation
 

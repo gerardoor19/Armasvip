@@ -2,9 +2,17 @@
 
 ## Recommended installation: GitHub Release
 
-Server owners should download the versioned `ArmasVIP-vX.Y.Z.zip` asset attached to a GitHub Release. The release package already contains the compiled NUI and does **not** require Node.js.
+For a normal FiveM server installation, download the versioned **ArmasVIP release asset** from GitHub Releases.
 
-Do not confuse the official release asset with GitHub's automatic `Source code (zip)` archive. Source archives are for development and include repository-only files.
+Use:
+
+```text
+ArmasVIP-v2.3.1.zip
+```
+
+The official release asset already includes the compiled NUI. **Server owners do not need Node.js, npm or any frontend build step.**
+
+Do not confuse the official release asset with GitHub's automatically generated `Source code (zip)` or `Source code (tar.gz)` archives. Those source archives are intended for developers and contain repository-only files.
 
 ## Requirements
 
@@ -13,15 +21,40 @@ Do not confuse the official release asset with GitHub's automatic `Source code (
 - `ox_inventory`
 - Optional identity integration: Qbox, QBCore or ESX
 
+## Install the resource
+
+1. Download `ArmasVIP-v2.3.1.zip` from the Releases page.
+2. Extract it.
+3. Move the included `armasvip` folder into your FiveM resources directory.
+4. Configure language and ACE permissions in `server.cfg`.
+5. Start dependencies before `armasvip`.
+
+Expected runtime structure:
+
+```text
+armasvip/
+├── fxmanifest.lua
+├── LICENSE
+├── client/
+├── config/
+├── locales/
+├── server/
+├── shared/
+├── sql/
+└── web/dist/
+```
+
 ## Language
 
-Choose one locale in `server.cfg`:
+Choose one locale in `server.cfg`.
+
+Spanish:
 
 ```cfg
 setr ox:locale es
 ```
 
-or:
+English:
 
 ```cfg
 setr ox:locale en
@@ -52,11 +85,11 @@ add_ace group.armasvip armasvip.admin allow
 add_principal identifier.license:YOUR_LICENSE group.armasvip
 ```
 
-Replace the example identifier only in your private `server.cfg`. Never commit real player identifiers to a public repository.
+Replace the example identifier only in your private `server.cfg`. Never publish real player identifiers.
 
 ## Database
 
-Import `sql/install.sql` if you prefer manual schema installation. ArmasVIP also includes safe bootstrap/migration logic for its required tables.
+ArmasVIP contains bootstrap/migration logic for its required tables. If you prefer manual installation, `sql/install.sql` is included in the release package.
 
 ## Commands
 
@@ -64,13 +97,16 @@ Import `sql/install.sql` if you prefer manual schema installation. ArmasVIP also
 - `/misarmasvip` — personal VIP arsenal
 - `/armasvipgestionar` — persistent grant management
 
-## Development installation
+## Updating
 
-Only developers working on the NUI need Node.js 20+:
+When a new ArmasVIP version is released:
 
-```bash
-cd armasvip/web
-npm install
-npm run lint
-npm run build
-```
+1. Back up your server and database.
+2. Download the new versioned Release ZIP.
+3. Replace the resource files while preserving any intentional configuration changes.
+4. Review the changelog for migrations or behavior changes.
+5. Restart the resource/server.
+
+## Development
+
+Frontend development instructions are intentionally kept out of the server installation flow. Contributors who modify the React/TypeScript NUI should use **[DEVELOPMENT.md](DEVELOPMENT.md)**.

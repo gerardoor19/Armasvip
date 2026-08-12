@@ -2,12 +2,13 @@
 
 # 👑 ArmasVIP
 
-### Persistent VIP Weapon Ownership for FiveM
+### Professional VIP Weapon Management for FiveM Roleplay Servers
 
 **Open-source · Server-authoritative · ES/EN · Install-ready GitHub Releases**
 
 ![Version](https://img.shields.io/badge/version-2.3.1-orange)
 ![FiveM](https://img.shields.io/badge/platform-FiveM-blue)
+![Roleplay](https://img.shields.io/badge/server-Roleplay-purple)
 ![License](https://img.shields.io/badge/license-GPL--3.0-green)
 ![Languages](https://img.shields.io/badge/languages-ES%20%7C%20EN-brightgreen)
 ![Inventory](https://img.shields.io/badge/inventory-ox__inventory-lightgrey)
@@ -19,12 +20,15 @@
 
 ## Overview
 
-ArmasVIP provides persistent VIP weapon ownership for FiveM. Authorized staff assign a specific VIP weapon to a player, creating a persistent server-side grant. The physical `ox_inventory` item can be lost or removed while the ownership grant remains available for validated recovery.
+**ArmasVIP is an open-source VIP weapon management script for FiveM roleplay servers.** It allows authorized server staff to assign persistent VIP weapons to players while keeping ownership, recovery and validation under server authority.
+
+Each VIP weapon is backed by a persistent server-side grant. The physical `ox_inventory` item can be lost or removed while the ownership grant remains available for validated recovery, helping roleplay servers manage VIP weapon benefits without relying on the inventory item alone.
 
 The project is fully open source and distributed through clean, versioned GitHub Release packages.
 
 ## Features
 
+- Built specifically for FiveM roleplay server VIP weapon management
 - Persistent SQL-backed VIP weapon grants
 - ACE-protected administrative interface
 - Personal `/misarmasvip` arsenal
@@ -155,6 +159,6 @@ ArmasVIP is released under the **GNU General Public License v3.0 (GPL-3.0)**.
 
 <div align="center">
 
-**ArmasVIP — persistent ownership, server authority, open source.**
+**ArmasVIP — VIP weapon management for FiveM roleplay servers.**
 
 </div>

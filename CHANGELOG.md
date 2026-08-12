@@ -10,9 +10,11 @@ All notable changes to ArmasVIP are documented here.
 - Automated GitHub Release packaging from version tags.
 
 ### Changed
-- The official release ZIP now contains runtime files only: no Markdown documentation, TypeScript source, Node metadata, audit notes or build artifacts.
+- The official release ZIP contains runtime files only: no Markdown documentation, TypeScript source, Node metadata, audit notes or local build artifacts.
+- Normal server installation uses the versioned GitHub Release asset and requires no Node.js, npm or NUI build step.
 - Server owners select the language through `setr ox:locale es` or `setr ox:locale en`.
 - Runtime package creation is allow-list based to prevent development files from leaking into releases.
+- README and installation documentation now clearly separate server installation from contributor/frontend development.
 
 ## [2.3.0] - 2026-08-11
 

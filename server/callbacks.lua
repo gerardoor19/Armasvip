@@ -16,6 +16,27 @@ local function resolveValidTint(requestedTint)
     return ArmasVipGrants.ResolveTint(requestedTint)
 end
 
+---@param weapon table
+---@param requested unknown
+---@return string[]|nil, string|nil
+local function resolveValidSkins(weapon, requested)
+    if requested == nil then return {}, nil end
+    if type(requested) ~= 'table' then return nil, 'invalid_payload' end
+
+    local result, seen = {}, {}
+    for _, value in ipairs(requested) do
+        local skinId = tostring(value or '')
+        if skinId ~= '' and skinId ~= ArmasVipSkins.Default and not seen[skinId] then
+            if not ArmasVipSkins.Get(skinId) then return nil, 'skin_invalid' end
+            if not ArmasVipSkins.IsCompatible(weapon.name, skinId) then return nil, 'skin_not_compatible' end
+            seen[skinId] = true
+            result[#result + 1] = skinId
+        end
+    end
+
+    return result, nil
+end
+
 -- Callback legacy: se conserva para no romper integraciones externas existentes.
 lib.callback.register('armasvip:giveWeapon', function(source, payload)
     if not isAllowed(source) then
@@ -69,15 +90,38 @@ end)
 
 lib.callback.register('armasvip:createGrant', function(source, payload)
     if not isAllowed(source) then return { ok = false, reason = 'no_permission' } end
-    if type(payload) ~= 'table' then return { ok = false, reason = 'invalid_payload' } end
+    if type(payload) ~= 'table' or type(payload.weapon) ~= 'string' then
+        return { ok = false, reason = 'invalid_payload' }
+    end
 
     local target = tonumber(payload.targetSource)
     if not target or not GetPlayerName(target) then
         return { ok = false, reason = 'target_offline' }
     end
 
+    local weapon = weaponsByName[payload.weapon:upper()]
+    if not weapon then return { ok = false, reason = 'invalid_weapon' } end
+
+    local selectedSkins, skinReason = resolveValidSkins(weapon, payload.skins)
+    if not selectedSkins then return { ok = false, reason = skinReason } end
+
     local ok, result = ArmasVipGrants.Create(source, target, payload)
     if not ok then return { ok = false, reason = result } end
+
+    -- Persist the admin-selected skin entitlements before the physical weapon is
+    -- delivered. If one entitlement cannot be stored, roll back the new grant
+    -- instead of leaving a partially configured VIP weapon behind.
+    for _, skinId in ipairs(selectedSkins) do
+        local unlocked, unlockResult = ArmasVipSkinState.SetUnlocked(source, result.id, skinId, true)
+        if not unlocked then
+            pcall(function()
+                MySQL.query.await("DELETE FROM armasvip_cosmetics WHERE grant_id = ? AND cosmetic_type = 'skin'", { result.id })
+                MySQL.query.await('DELETE FROM armasvip_skin_state WHERE grant_id = ?', { result.id })
+            end)
+            ArmasVipGrants.Revoke(source, result.id)
+            return { ok = false, reason = unlockResult or 'skin_unlock_failed' }
+        end
+    end
 
     local delivered, deliveryResult = ArmasVipGrants.Equip(target, result.id)
 

@@ -44,6 +44,8 @@ export function SkinStudioOverlay() {
   const skins = useOwnedArsenalStore((s) => s.skins);
   const selectedGrantId = useOwnedArsenalStore((s) => s.selectedGrantId);
   const setSkin = useOwnedArsenalStore((s) => s.setSkin);
+  const loadSkinContext = useOwnedArsenalStore((s) => s.loadSkinContext);
+  const skinContextLoading = useOwnedArsenalStore((s) => s.skinContextLoading);
   const pending = useOwnedArsenalStore((s) => s.pending);
   const translations = useOwnedArsenalStore((s) => s.translations);
   const imageBase = useOwnedArsenalStore((s) => s.imageBase);
@@ -70,16 +72,19 @@ export function SkinStudioOverlay() {
   const previewUnlocked = previewSkin ? unlocked.has(previewSkin.id) : false;
   const previewActive = previewSkin?.id === selectedGrant?.activeSkin;
 
-  if (!selectedGrant || skins.length === 0) return null;
+  if (!selectedGrant) return null;
+
+  const openStudio = () => {
+    setPreviewSkinId(selectedGrant.activeSkin ?? compatibleSkins[0]?.id ?? null);
+    setOpen(true);
+    if (skins.length === 0 && !skinContextLoading) void loadSkinContext();
+  };
 
   return (
     <>
       <button
         type="button"
-        onClick={() => {
-          setPreviewSkinId(selectedGrant.activeSkin ?? compatibleSkins[0]?.id ?? null);
-          setOpen(true);
-        }}
+        onClick={openStudio}
         className="absolute bottom-[calc(4vh+18px)] right-[calc(2.5vw+18px)] z-20 flex items-center gap-2 rounded-xl border border-[#ff7a00]/35 bg-[#11151c]/95 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.13em] text-[#ff9b3d] shadow-[0_14px_34px_rgba(0,0,0,.38)] backdrop-blur-md transition hover:-translate-y-px hover:border-[#ff7a00]/60 hover:bg-[#171b23]"
       >
         <WandSparkles className="h-4 w-4" />
@@ -164,7 +169,24 @@ export function SkinStudioOverlay() {
               </aside>
 
               <main className="flex min-w-0 flex-1 flex-col p-6">
-                {selectedGrant.skinSupported === false ? (
+                {skinContextLoading && skins.length === 0 ? (
+                  <div className="flex flex-1 items-center justify-center text-center">
+                    <div className="max-w-sm">
+                      <Sparkles className="mx-auto h-12 w-12 animate-pulse text-[#21d4f4]/60" />
+                      <h3 className="mt-4 text-lg font-semibold text-vip-text">{t(translations, 'ui_skin_loading')}</h3>
+                    </div>
+                  </div>
+                ) : skins.length === 0 ? (
+                  <div className="flex flex-1 items-center justify-center text-center">
+                    <div className="max-w-sm">
+                      <Palette className="mx-auto h-12 w-12 text-vip-muted/35" />
+                      <h3 className="mt-4 text-lg font-semibold text-vip-text">{t(translations, 'ui_skin_load_failed')}</h3>
+                      <button type="button" onClick={() => void loadSkinContext()} className="mt-4 rounded-lg border border-white/[0.08] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.1em] text-vip-text hover:bg-white/[0.05]">
+                        {t(translations, 'ui_skin_retry')}
+                      </button>
+                    </div>
+                  </div>
+                ) : selectedGrant.skinSupported === false ? (
                   <div className="flex flex-1 items-center justify-center text-center">
                     <div className="max-w-sm">
                       <Palette className="mx-auto h-12 w-12 text-vip-muted/35" />

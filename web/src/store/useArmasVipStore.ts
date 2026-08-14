@@ -10,6 +10,7 @@ interface ArmasVipState {
   components: Record<string, WeaponComponentMeta>;
   tints: WeaponTint[];
   skins: WeaponSkin[];
+  defaultSkins: string[];
   imageBase: string;
   translations: UiTranslations;
   activeCategory: string | null;
@@ -33,6 +34,11 @@ interface ArmasVipState {
   clearResult: () => void;
 }
 
+const normalizeDefaults = (values?: string[]) => {
+  const unique = Array.from(new Set((values ?? ['default']).filter((value) => typeof value === 'string' && value.length > 0)));
+  return unique.includes('default') ? unique : ['default', ...unique];
+};
+
 export const useArmasVipStore = create<ArmasVipState>((set, get) => ({
   isOpen: false,
   categories: [],
@@ -40,6 +46,7 @@ export const useArmasVipStore = create<ArmasVipState>((set, get) => ({
   components: {},
   tints: [],
   skins: [],
+  defaultSkins: ['default'],
   imageBase: '',
   translations: {},
   activeCategory: null,
@@ -52,12 +59,14 @@ export const useArmasVipStore = create<ArmasVipState>((set, get) => ({
   lastResult: null,
 
   open: (payload) => {
+    const defaultSkins = normalizeDefaults(payload.defaultSkins);
     set({
       isOpen: true,
       categories: payload.categories,
       weapons: payload.weapons,
       components: payload.components,
       tints: payload.tints,
+      defaultSkins,
       imageBase: payload.imageBase,
       translations: payload.translations ?? {},
       activeCategory: payload.categories[0]?.id ?? null,
@@ -65,7 +74,7 @@ export const useArmasVipStore = create<ArmasVipState>((set, get) => ({
       selectedWeapon: null,
       selectedComponents: [],
       selectedTint: 0,
-      selectedSkins: ['default'],
+      selectedSkins: defaultSkins,
       lastResult: null,
     });
     void get().loadSkins();
@@ -74,12 +83,13 @@ export const useArmasVipStore = create<ArmasVipState>((set, get) => ({
   close: () => set({ isOpen: false, selectedWeapon: null }),
   setCategory: (id) => set({ activeCategory: id, selectedWeapon: null }),
   setSearch: (value) => set({ search: value }),
-  selectWeapon: (weapon) => set({ selectedWeapon: weapon, selectedComponents: [], selectedTint: 0, selectedSkins: ['default'] }),
+  selectWeapon: (weapon) => set((state) => ({ selectedWeapon: weapon, selectedComponents: [], selectedTint: 0, selectedSkins: [...state.defaultSkins] })),
   toggleComponent: (name) => set((state) => ({ selectedComponents: state.selectedComponents.includes(name) ? state.selectedComponents.filter((c) => c !== name) : [...state.selectedComponents, name] })),
   setTint: (index) => set({ selectedTint: index }),
-  toggleSkin: (id) => set((state) => ({
-    selectedSkins: id === 'default' ? state.selectedSkins : state.selectedSkins.includes(id) ? state.selectedSkins.filter((skin) => skin !== id) : [...state.selectedSkins, id],
-  })),
+  toggleSkin: (id) => set((state) => {
+    if (state.defaultSkins.includes(id)) return state;
+    return { selectedSkins: state.selectedSkins.includes(id) ? state.selectedSkins.filter((skin) => skin !== id) : [...state.selectedSkins, id] };
+  }),
   loadSkins: async () => {
     const response = await fetchNui<SkinContextResponse>('armasvip:getSkinContext');
     if (response?.ok) set({ skins: response.catalog ?? [], translations: { ...get().translations, ...(response.translations ?? {}) } });

@@ -27,9 +27,20 @@ Config.Skins = {
     DuiTimeoutMs = 5000,
     AllowExternalUrls = false,
 
-    -- These skins are automatically available on every compatible VIP grant.
-    -- Leave only 'default' here if every special skin should be granted manually.
-    DefaultUnlocked = { 'default', 'carbon', 'gold', 'galaxy' },
+    -- Automatically available on every compatible VIP grant.
+    -- The remaining exotic/animated skins still appear in Weapon Studio for
+    -- preview and can be unlocked by staff from /armasvipgestionar.
+    DefaultUnlocked = {
+        'default',
+        'carbon',
+        'gold',
+        'obsidian',
+        'arctic',
+        'crimson',
+        'toxic',
+        'galaxy',
+        'aurora',
+    },
 
     Inspect = {
         Enabled = true,

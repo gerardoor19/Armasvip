@@ -37,7 +37,6 @@ local function localizedCategories()
     return categories
 end
 
----@return { index: number, label: string }[]
 local function buildTints()
     local tints = {}
     for _, index in ipairs(Config.TintIndexes) do
@@ -64,11 +63,9 @@ end
 
 local function openAdminMenu()
     if menuOpen then return end
-
     local payload = baseNuiPayload()
     payload.categories = localizedCategories()
     payload.weapons = ArmasVipData.weapons
-
     menuOpen = true
     SetNuiFocus(true, true)
     SendNUIMessage({ action = 'open', data = payload })
@@ -81,7 +78,6 @@ end
 
 local function componentSummary(components)
     if type(components) ~= 'table' or #components == 0 then return locale('no_components') end
-
     local labels = {}
     for _, name in ipairs(components) do
         labels[#labels + 1] = (ArmasVipData.components[name] and ArmasVipData.components[name].label) or name
@@ -98,19 +94,16 @@ end
 
 local function showOwnedMenu()
     if menuOpen then return end
-
     local context = lib.callback.await('armasvip:getMyGrants', false)
     if not context or context.identityError then
         lib.notify({ title = locale('notify_title'), description = locale('identity_failed'), type = 'error' })
         return
     end
-
     local grants = context.grants or {}
     if #grants == 0 then
         lib.notify({ title = locale('notify_title'), description = locale('no_vip_weapons'), type = 'inform' })
         return
     end
-
     menuOpen = true
     SetNuiFocus(true, true)
     SendNUIMessage({ action = 'openOwned', data = ownedPayload(context) })
@@ -150,10 +143,8 @@ local function showGrantManager()
                             description = locale('manage_camos_description'),
                             icon = 'palette',
                             onSelect = function()
-                                local tintOptions = {}
-                                local unlocked = {}
+                                local tintOptions, unlocked = {}, {}
                                 for _, value in ipairs(current.unlockedTints or {}) do unlocked[tonumber(value)] = true end
-
                                 for _, tint in ipairs(buildTints()) do
                                     local isUnlocked = unlocked[tint.index] == true
                                     local tintValue = tint
@@ -169,24 +160,15 @@ local function showGrantManager()
                                                 unlocked = not isUnlocked,
                                             })
                                             if result and result.ok then
-                                                lib.notify({
-                                                    title = locale('notify_title'),
-                                                    description = isUnlocked and locale('camo_removed') or locale('camo_unlocked'),
-                                                    type = 'success',
-                                                })
+                                                lib.notify({ title = locale('notify_title'), description = isUnlocked and locale('camo_removed') or locale('camo_unlocked'), type = 'success' })
                                                 showGrantManager()
                                             else
                                                 local reason = result and result.reason
-                                                lib.notify({
-                                                    title = locale('notify_title'),
-                                                    description = reason == 'default_tint' and locale('default_tint_required') or locale('camo_modify_failed'),
-                                                    type = 'error',
-                                                })
+                                                lib.notify({ title = locale('notify_title'), description = reason == 'default_tint' and locale('default_tint_required') or locale('camo_modify_failed'), type = 'error' })
                                             end
                                         end,
                                     }
                                 end
-
                                 local tintMenuId = ('armasvip_grant_tints_%s'):format(current.id)
                                 lib.registerContext({ id = tintMenuId, title = locale('unlocked_camos'), menu = actionId, options = tintOptions })
                                 lib.showContext(tintMenuId)
@@ -197,9 +179,7 @@ local function showGrantManager()
                             description = locale('manage_skins_description'),
                             icon = 'wand-magic-sparkles',
                             iconColor = '#21d4f4',
-                            onSelect = function()
-                                TriggerEvent('armasvip:manageSkinsForGrant', current.id)
-                            end,
+                            onSelect = function() TriggerEvent('armasvip:manageSkinsForGrant', current.id) end,
                         },
                         {
                             title = locale('revoke_vip_weapon'),
@@ -207,14 +187,8 @@ local function showGrantManager()
                             icon = 'trash',
                             iconColor = '#ef4444',
                             onSelect = function()
-                                local answer = lib.alertDialog({
-                                    header = locale('revoke_vip_weapon'),
-                                    content = locale('revoke_confirm', current.label, ownerName),
-                                    centered = true,
-                                    cancel = true,
-                                })
+                                local answer = lib.alertDialog({ header = locale('revoke_vip_weapon'), content = locale('revoke_confirm', current.label, ownerName), centered = true, cancel = true })
                                 if answer ~= 'confirm' then return end
-
                                 local result = lib.callback.await('armasvip:revokeGrant', false, current.id)
                                 if result and result.ok then
                                     lib.notify({ title = locale('notify_title'), description = locale('grant_revoked'), type = 'success' })
@@ -231,10 +205,7 @@ local function showGrantManager()
         }
     end
 
-    if #options == 0 then
-        options[1] = { title = locale('no_active_grants'), description = locale('no_active_grants_description'), icon = 'circle-info', readOnly = true }
-    end
-
+    if #options == 0 then options[1] = { title = locale('no_active_grants'), description = locale('no_active_grants_description'), icon = 'circle-info', readOnly = true } end
     lib.registerContext({ id = 'armasvip_manage_grants', title = locale('manage_vip_weapons'), options = options })
     lib.showContext('armasvip_manage_grants')
 end
@@ -253,10 +224,7 @@ local function assignSelectedWeapon(data)
     end
 
     local playerOptions = {}
-    for _, player in ipairs(context.players or {}) do
-        playerOptions[#playerOptions + 1] = { value = tostring(player.source), label = ('[%s] %s'):format(player.source, player.name) }
-    end
-
+    for _, player in ipairs(context.players or {}) do playerOptions[#playerOptions + 1] = { value = tostring(player.source), label = ('[%s] %s'):format(player.source, player.name) } end
     if #playerOptions == 0 then
         lib.notify({ title = locale('notify_title'), description = locale('no_players_online'), type = 'error' })
         Wait(100)
@@ -265,26 +233,11 @@ local function assignSelectedWeapon(data)
     end
 
     local durationOptions = {}
-    for _, duration in ipairs(context.durations or {}) do
-        durationOptions[#durationOptions + 1] = { value = tostring(duration.days), label = durationLabel(duration) }
-    end
+    for _, duration in ipairs(context.durations or {}) do durationOptions[#durationOptions + 1] = { value = tostring(duration.days), label = durationLabel(duration) } end
 
     local input = lib.inputDialog(locale('assign_vip_weapon'), {
-        {
-            type = 'select',
-            label = locale('player'),
-            description = locale('persistent_identity_description'),
-            options = playerOptions,
-            searchable = true,
-            required = true,
-        },
-        {
-            type = 'select',
-            label = locale('duration'),
-            options = durationOptions,
-            default = durationOptions[1] and durationOptions[1].value or '0',
-            required = true,
-        },
+        { type = 'select', label = locale('player'), description = locale('persistent_identity_description'), options = playerOptions, searchable = true, required = true },
+        { type = 'select', label = locale('duration'), options = durationOptions, default = durationOptions[1] and durationOptions[1].value or '0', required = true },
     }, { size = 'md' })
 
     if not input then
@@ -305,6 +258,17 @@ local function assignSelectedWeapon(data)
     if not result or not result.ok then
         local reasonKey = 'reason_' .. tostring(result and result.reason or 'unknown')
         lib.notify({ title = locale('notify_title'), description = locale(reasonKey), type = 'error' })
+    elseif result.grant and type(data.skins) == 'table' then
+        for _, skinId in ipairs(data.skins) do
+            skinId = tostring(skinId or '')
+            if skinId ~= '' and skinId ~= ArmasVipSkins.Default then
+                lib.callback.await('armasvip:setSkinUnlock', false, {
+                    grantId = result.grant.id,
+                    skinId = skinId,
+                    unlocked = true,
+                })
+            end
+        end
     end
 
     Wait(100)
@@ -316,23 +280,13 @@ RegisterNetEvent('armasvip:openAdmin', openAdminMenu)
 RegisterNetEvent('armasvip:openOwned', showOwnedMenu)
 RegisterNetEvent('armasvip:manage', showGrantManager)
 
-RegisterNUICallback('armasvip:close', function(_, cb)
-    closeMenu()
-    cb(true)
-end)
-
-RegisterNUICallback('armasvip:equip', function(data, cb)
-    closeMenu()
-    cb(true)
-    CreateThread(function() assignSelectedWeapon(data) end)
-end)
-
+RegisterNUICallback('armasvip:close', function(_, cb) closeMenu(); cb(true) end)
+RegisterNUICallback('armasvip:equip', function(data, cb) closeMenu(); cb(true); CreateThread(function() assignSelectedWeapon(data) end) end)
 RegisterNUICallback('armasvip:ownedEquip', function(data, cb)
     local result = lib.callback.await('armasvip:equipGrant', false, data and data.grantId)
     local context = lib.callback.await('armasvip:getMyGrants', false)
     cb({ ok = result and result.ok == true, reason = result and result.reason, context = context and ownedPayload(context) or nil })
 end)
-
 RegisterNUICallback('armasvip:ownedSetTint', function(data, cb)
     local result = lib.callback.await('armasvip:setActiveTint', false, data)
     local context = lib.callback.await('armasvip:getMyGrants', false)
@@ -349,7 +303,4 @@ CreateThread(function()
     end
 end)
 
-CreateThread(function()
-    Wait(15000)
-    TriggerServerEvent('armasvip:server:cleanup')
-end)
+CreateThread(function() Wait(15000); TriggerServerEvent('armasvip:server:cleanup') end)

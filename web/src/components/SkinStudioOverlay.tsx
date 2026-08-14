@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Check, Lock, Palette, Sparkles, WandSparkles, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { t } from '../lib/i18n';
@@ -27,12 +27,56 @@ function SkinSwatch({ skin, className = '' }: { skin: WeaponSkin; className?: st
     );
   }
 
-  const source = skin.source.type === 'asset' ? skin.source.path : skin.source.type === 'url' ? skin.source.url : null;
+  const source = skin.source.type === 'asset'
+    ? skin.source.path
+    : skin.source.type === 'url'
+      ? skin.source.url
+      : null;
+
   if (source) return <img src={source} alt="" className={`object-cover ${className}`} draggable={false} />;
 
   return (
     <div className={`flex items-center justify-center bg-gradient-to-br from-white/[0.06] to-black/20 ${className}`}>
       <Palette className="h-7 w-7 text-vip-muted/55" />
+    </div>
+  );
+}
+
+function WeaponSkinPreview({ skin, image, label }: { skin: WeaponSkin; image: string; label: string }) {
+  const maskStyle: CSSProperties = {
+    WebkitMaskImage: `url(${image})`,
+    WebkitMaskRepeat: 'no-repeat',
+    WebkitMaskPosition: 'center',
+    WebkitMaskSize: 'contain',
+    maskImage: `url(${image})`,
+    maskRepeat: 'no-repeat',
+    maskPosition: 'center',
+    maskSize: 'contain',
+  };
+
+  return (
+    <div className="relative h-full w-full">
+      <img
+        src={image}
+        alt={label}
+        className={`absolute inset-0 h-full w-full object-contain drop-shadow-[0_28px_38px_rgba(0,0,0,.78)] ${skin.source.type === 'none' ? 'opacity-100' : 'opacity-28'}`}
+        draggable={false}
+      />
+
+      {skin.source.type !== 'none' && (
+        <div className="absolute inset-[8%]" style={maskStyle}>
+          <SkinSwatch skin={skin} className="h-full w-full" />
+        </div>
+      )}
+
+      {skin.source.type !== 'none' && (
+        <img
+          src={image}
+          alt=""
+          className="pointer-events-none absolute inset-0 h-full w-full object-contain opacity-35 mix-blend-screen"
+          draggable={false}
+        />
+      )}
     </div>
   );
 }
@@ -68,11 +112,14 @@ export function SkinStudioOverlay() {
     ?? compatibleSkins.find((skin) => skin.id === selectedGrant?.activeSkin)
     ?? compatibleSkins[0]
     ?? null;
+
   const unlocked = new Set(selectedGrant?.unlockedSkins ?? []);
   const previewUnlocked = previewSkin ? unlocked.has(previewSkin.id) : false;
   const previewActive = previewSkin?.id === selectedGrant?.activeSkin;
 
   if (!selectedGrant) return null;
+
+  const weaponImage = `${imageBase}${selectedGrant.weapon}.png`;
 
   const openStudio = () => {
     setPreviewSkinId(selectedGrant.activeSkin ?? compatibleSkins[0]?.id ?? null);
@@ -195,20 +242,10 @@ export function SkinStudioOverlay() {
                   </div>
                 ) : previewSkin ? (
                   <>
-                    <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-white/[0.06] bg-[#05070b]">
-                      <div className="absolute inset-0 opacity-70">
-                        <SkinSwatch skin={previewSkin} className="h-full w-full" />
+                    <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-white/[0.06] bg-[radial-gradient(circle_at_center,#151a22_0%,#080b10_52%,#040609_100%)]">
+                      <div className="absolute inset-x-[10%] inset-y-[12%] z-10">
+                        <WeaponSkinPreview skin={previewSkin} image={weaponImage} label={selectedGrant.label} />
                       </div>
-                      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,.12),rgba(0,0,0,.82)_72%)]" />
-                      <motion.img
-                        key={`${selectedGrant.id}-${previewSkin.id}`}
-                        initial={{ opacity: 0, scale: 0.95, y: 8 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        src={`${imageBase}${selectedGrant.weapon}.png`}
-                        alt={selectedGrant.label}
-                        className="relative z-10 max-h-[300px] max-w-[82%] object-contain drop-shadow-[0_26px_34px_rgba(0,0,0,.72)]"
-                        draggable={false}
-                      />
                       <div className="absolute left-5 top-5 z-20 flex items-center gap-2 rounded-lg border border-white/[0.08] bg-black/45 px-3 py-2 backdrop-blur-sm">
                         {previewSkin.animated && <Sparkles className="h-3.5 w-3.5 text-[#21d4f4]" />}
                         <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-white">{previewSkin.animated ? t(translations, 'ui_skin_animated') : t(translations, 'ui_skin_static')}</span>

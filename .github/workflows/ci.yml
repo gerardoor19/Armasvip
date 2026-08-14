@@ -28,7 +28,7 @@ jobs:
           python3 -m json.tool locales/es.json >/dev/null
 
   nui:
-    name: NUI build and lint
+    name: NUI build, lint and package
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -46,3 +46,30 @@ jobs:
         run: npm run lint
       - name: Build
         run: npm run build
+      - name: Assemble clean FiveM package
+        working-directory: ${{ github.workspace }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="package/armasvip"
+          mkdir -p "$root/web"
+          cp fxmanifest.lua LICENSE "$root/"
+          cp -R client config locales server shared sql "$root/"
+          cp -R web/dist "$root/web/dist"
+
+          if find "$root" -type f \( -name '*.md' -o -name '*.ts' -o -name '*.tsx' -o -name '*.tsbuildinfo' -o -name 'package.json' -o -name 'package-lock.json' \) | grep -q .; then
+            echo 'Unexpected development file found in runtime package.' >&2
+            find "$root" -type f | sort
+            exit 1
+          fi
+
+          (cd package && zip -qr ../ArmasVIP-2.4.0-rc.zip armasvip)
+          echo 'Installable package contents:'
+          find "$root" -type f | sort
+      - name: Upload installable package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArmasVIP-2.4.0-rc
+          path: ArmasVIP-2.4.0-rc.zip
+          if-no-files-found: error
+          retention-days: 14

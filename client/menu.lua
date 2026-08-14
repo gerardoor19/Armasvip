@@ -48,6 +48,7 @@ end
 local function closeMenu()
     if not menuOpen then return end
     menuOpen = false
+    TriggerEvent('armasvip:client:restorePersistedSkin')
     SetNuiFocus(false, false)
     SendNUIMessage({ action = 'close' })
 end
@@ -56,6 +57,7 @@ local function baseNuiPayload()
     return {
         components = ArmasVipData.components,
         tints = buildTints(),
+        defaultSkins = (Config.Skins and Config.Skins.DefaultUnlocked) or { ArmasVipSkins.Default },
         imageBase = 'nui://ox_inventory/web/images/',
         translations = buildUiTranslations(),
     }
@@ -252,23 +254,13 @@ local function assignSelectedWeapon(data)
         weapon = data.weapon,
         components = data.components,
         tint = data.tint,
+        skins = type(data.skins) == 'table' and data.skins or {},
     }
 
     local result = lib.callback.await('armasvip:createGrant', false, payload)
     if not result or not result.ok then
         local reasonKey = 'reason_' .. tostring(result and result.reason or 'unknown')
         lib.notify({ title = locale('notify_title'), description = locale(reasonKey), type = 'error' })
-    elseif result.grant and type(data.skins) == 'table' then
-        for _, skinId in ipairs(data.skins) do
-            skinId = tostring(skinId or '')
-            if skinId ~= '' and skinId ~= ArmasVipSkins.Default then
-                lib.callback.await('armasvip:setSkinUnlock', false, {
-                    grantId = result.grant.id,
-                    skinId = skinId,
-                    unlocked = true,
-                })
-            end
-        end
     end
 
     Wait(100)

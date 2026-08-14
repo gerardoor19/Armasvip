@@ -5,60 +5,20 @@ ArmasVipSkins.Default = 'default'
 -- Runtime skins replace the selected GTA weapon diffuse texture on the local client.
 -- This avoids custom weapon models/Blender for compatible vanilla weapons.
 ArmasVipSkins.Catalog = {
-    {
-        id = 'default',
-        labelKey = 'skin_default',
-        descriptionKey = 'skin_default_desc',
-        rarity = 'common',
-        animated = false,
-        weapons = '*',
-        source = { type = 'none' },
-    },
-    {
-        id = 'carbon',
-        labelKey = 'skin_carbon',
-        descriptionKey = 'skin_carbon_desc',
-        rarity = 'common',
-        animated = false,
-        weapons = '*',
-        source = { type = 'procedural', preset = 'carbon' },
-    },
-    {
-        id = 'gold',
-        labelKey = 'skin_gold',
-        descriptionKey = 'skin_gold_desc',
-        rarity = 'rare',
-        animated = false,
-        weapons = '*',
-        source = { type = 'procedural', preset = 'gold' },
-    },
-    {
-        id = 'galaxy',
-        labelKey = 'skin_galaxy',
-        descriptionKey = 'skin_galaxy_desc',
-        rarity = 'legendary',
-        animated = true,
-        weapons = '*',
-        source = { type = 'procedural', preset = 'galaxy' },
-    },
-    {
-        id = 'inferno',
-        labelKey = 'skin_inferno',
-        descriptionKey = 'skin_inferno_desc',
-        rarity = 'epic',
-        animated = true,
-        weapons = '*',
-        source = { type = 'procedural', preset = 'inferno' },
-    },
-    {
-        id = 'electric',
-        labelKey = 'skin_electric',
-        descriptionKey = 'skin_electric_desc',
-        rarity = 'epic',
-        animated = true,
-        weapons = '*',
-        source = { type = 'procedural', preset = 'electric' },
-    },
+    { id = 'default', labelKey = 'skin_default', descriptionKey = 'skin_default_desc', rarity = 'common', animated = false, weapons = '*', source = { type = 'none' } },
+    { id = 'carbon', labelKey = 'skin_carbon', descriptionKey = 'skin_carbon_desc', rarity = 'common', animated = false, weapons = '*', source = { type = 'procedural', preset = 'carbon' } },
+    { id = 'gold', labelKey = 'skin_gold', descriptionKey = 'skin_gold_desc', rarity = 'rare', animated = false, weapons = '*', source = { type = 'procedural', preset = 'gold' } },
+    { id = 'obsidian', labelKey = 'skin_obsidian', descriptionKey = 'skin_obsidian_desc', rarity = 'rare', animated = false, weapons = '*', source = { type = 'procedural', preset = 'obsidian' } },
+    { id = 'arctic', labelKey = 'skin_arctic', descriptionKey = 'skin_arctic_desc', rarity = 'rare', animated = false, weapons = '*', source = { type = 'procedural', preset = 'arctic' } },
+    { id = 'crimson', labelKey = 'skin_crimson', descriptionKey = 'skin_crimson_desc', rarity = 'epic', animated = false, weapons = '*', source = { type = 'procedural', preset = 'crimson' } },
+    { id = 'toxic', labelKey = 'skin_toxic', descriptionKey = 'skin_toxic_desc', rarity = 'epic', animated = false, weapons = '*', source = { type = 'procedural', preset = 'toxic' } },
+    { id = 'galaxy', labelKey = 'skin_galaxy', descriptionKey = 'skin_galaxy_desc', rarity = 'legendary', animated = true, weapons = '*', source = { type = 'procedural', preset = 'galaxy' } },
+    { id = 'inferno', labelKey = 'skin_inferno', descriptionKey = 'skin_inferno_desc', rarity = 'epic', animated = true, weapons = '*', source = { type = 'procedural', preset = 'inferno' } },
+    { id = 'electric', labelKey = 'skin_electric', descriptionKey = 'skin_electric_desc', rarity = 'epic', animated = true, weapons = '*', source = { type = 'procedural', preset = 'electric' } },
+    { id = 'aurora', labelKey = 'skin_aurora', descriptionKey = 'skin_aurora_desc', rarity = 'legendary', animated = true, weapons = '*', source = { type = 'procedural', preset = 'aurora' } },
+    { id = 'plasma', labelKey = 'skin_plasma', descriptionKey = 'skin_plasma_desc', rarity = 'legendary', animated = true, weapons = '*', source = { type = 'procedural', preset = 'plasma' } },
+    { id = 'matrix', labelKey = 'skin_matrix', descriptionKey = 'skin_matrix_desc', rarity = 'epic', animated = true, weapons = '*', source = { type = 'procedural', preset = 'matrix' } },
+    { id = 'bloodmoon', labelKey = 'skin_bloodmoon', descriptionKey = 'skin_bloodmoon_desc', rarity = 'legendary', animated = true, weapons = '*', source = { type = 'procedural', preset = 'bloodmoon' } },
 }
 
 -- Vanilla GTA texture dictionary + diffuse texture mappings.
@@ -110,9 +70,7 @@ ArmasVipSkins.Textures = {
 }
 
 local byId = {}
-for _, skin in ipairs(ArmasVipSkins.Catalog) do
-    byId[skin.id] = skin
-end
+for _, skin in ipairs(ArmasVipSkins.Catalog) do byId[skin.id] = skin end
 
 function ArmasVipSkins.Get(id)
     return type(id) == 'string' and byId[id] or nil

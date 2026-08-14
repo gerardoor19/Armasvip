@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ArmasVIP Skin Renderer</title>
+  <style>
+    html, body, canvas { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { background: #111; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+<canvas id="skin" width="512" height="512"></canvas>
+<script>
+(() => {
+  const canvas = document.getElementById('skin');
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const preset = new URLSearchParams(location.search).get('preset') || 'carbon';
+  const size = canvas.width;
+  const rand = (seed) => {
+    const x = Math.sin(seed * 999.91) * 43758.5453;
+    return x - Math.floor(x);
+  };
+
+  function background(a, b) {
+    const g = ctx.createLinearGradient(0, 0, size, size);
+    g.addColorStop(0, a);
+    g.addColorStop(1, b);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+  }
+
+  function carbon() {
+    background('#111418', '#242a31');
+    const tile = 26;
+    for (let y = -tile; y < size + tile; y += tile) {
+      for (let x = -tile; x < size + tile; x += tile) {
+        const even = ((x / tile + y / tile) & 1) === 0;
+        ctx.fillStyle = even ? 'rgba(255,255,255,.055)' : 'rgba(0,0,0,.22)';
+        ctx.beginPath();
+        ctx.moveTo(x, y + tile / 2);
+        ctx.lineTo(x + tile / 2, y);
+        ctx.lineTo(x + tile, y + tile / 2);
+        ctx.lineTo(x + tile / 2, y + tile);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    const shine = ctx.createLinearGradient(0, size, size, 0);
+    shine.addColorStop(.2, 'rgba(255,255,255,0)');
+    shine.addColorStop(.5, 'rgba(255,255,255,.13)');
+    shine.addColorStop(.8, 'rgba(255,255,255,0)');
+    ctx.fillStyle = shine;
+    ctx.fillRect(0, 0, size, size);
+  }
+
+  function gold() {
+    background('#4d2800', '#f6bf35');
+    const g = ctx.createRadialGradient(size * .34, size * .25, 10, size * .4, size * .4, size * .75);
+    g.addColorStop(0, '#fff3a0');
+    g.addColorStop(.22, '#e8ad24');
+    g.addColorStop(.62, '#8a4c08');
+    g.addColorStop(1, '#291204');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+    ctx.globalAlpha = .16;
+    for (let i = 0; i < 90; i++) {
+      const y = rand(i + 3) * size;
+      ctx.fillStyle = i % 3 ? '#fff' : '#3c1f02';
+      ctx.fillRect(0, y, size, 1 + rand(i + 5) * 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function galaxy(time) {
+    const t = time * .00009;
+    background('#03020d', '#10052b');
+    const cx = size * (.45 + Math.sin(t * 2) * .08);
+    const cy = size * (.45 + Math.cos(t * 1.7) * .08);
+    const nebula = ctx.createRadialGradient(cx, cy, 15, cx, cy, size * .7);
+    nebula.addColorStop(0, 'rgba(255,74,210,.92)');
+    nebula.addColorStop(.2, 'rgba(93,80,255,.75)');
+    nebula.addColorStop(.48, 'rgba(15,196,255,.42)');
+    nebula.addColorStop(1, 'rgba(3,2,13,0)');
+    ctx.fillStyle = nebula;
+    ctx.fillRect(0, 0, size, size);
+    for (let i = 0; i < 115; i++) {
+      const x = (rand(i * 3 + 2) * size + time * (.005 + rand(i) * .012)) % size;
+      const y = rand(i * 7 + 8) * size;
+      const r = .5 + rand(i * 11) * 1.7;
+      ctx.globalAlpha = .35 + rand(i * 13) * .65;
+      ctx.fillStyle = i % 7 === 0 ? '#7fe8ff' : '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function inferno(time) {
+    background('#160100', '#450800');
+    const t = time * .0028;
+    for (let i = 0; i < 24; i++) {
+      const baseX = (i / 24) * size;
+      const phase = i * .82 + t;
+      const height = 120 + (Math.sin(phase) + 1) * 75;
+      const grad = ctx.createLinearGradient(0, size, 0, size - height);
+      grad.addColorStop(0, '#ff2000');
+      grad.addColorStop(.35, '#ff7600');
+      grad.addColorStop(.7, '#ffd84a');
+      grad.addColorStop(1, 'rgba(255,238,126,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(baseX - 18, size);
+      ctx.quadraticCurveTo(baseX + Math.sin(phase * 1.4) * 28, size - height * .55, baseX + Math.sin(phase) * 20, size - height);
+      ctx.quadraticCurveTo(baseX + 24, size - height * .55, baseX + 22, size);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'screen';
+    const glow = ctx.createRadialGradient(size / 2, size * .78, 20, size / 2, size * .78, size * .7);
+    glow.addColorStop(0, 'rgba(255,190,20,.35)');
+    glow.addColorStop(1, 'rgba(255,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, size, size);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  function electric(time) {
+    background('#020817', '#071b43');
+    const t = time * .002;
+    ctx.lineCap = 'round';
+    for (let bolt = 0; bolt < 7; bolt++) {
+      const seed = bolt * 37;
+      const yBase = ((bolt + .5) / 7) * size + Math.sin(t + bolt) * 18;
+      ctx.beginPath();
+      ctx.moveTo(-20, yBase);
+      for (let s = 0; s <= 18; s++) {
+        const x = (s / 18) * (size + 40) - 20;
+        const y = yBase + Math.sin(s * 1.6 + t * 2 + bolt) * 22 + (rand(seed + s) - .5) * 28;
+        ctx.lineTo(x, y);
+      }
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = '#16d9ff';
+      ctx.strokeStyle = bolt % 2 ? '#66ecff' : '#b8fbff';
+      ctx.lineWidth = 2 + (bolt % 3);
+      ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+    const glow = ctx.createRadialGradient(size * .55, size * .5, 10, size * .55, size * .5, size * .65);
+    glow.addColorStop(0, 'rgba(20,210,255,.28)');
+    glow.addColorStop(1, 'rgba(0,80,255,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, size, size);
+  }
+
+  const animated = preset === 'galaxy' || preset === 'inferno' || preset === 'electric';
+  function render(time = 0) {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+    if (preset === 'gold') gold();
+    else if (preset === 'galaxy') galaxy(time);
+    else if (preset === 'inferno') inferno(time);
+    else if (preset === 'electric') electric(time);
+    else carbon();
+    if (animated) requestAnimationFrame(render);
+  }
+  render();
+})();
+</script>
+</body>
+</html>

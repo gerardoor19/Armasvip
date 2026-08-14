@@ -3,12 +3,6 @@
 -- VIP grant is currently equipped, the runtime texture is also applied locally
 -- as a temporary preview and restored from persisted state on cancel/close.
 
-local function restorePersistedSkin()
-    if GetResourceState('ox_inventory') ~= 'started' then return end
-    local weapon = exports.ox_inventory:getCurrentWeapon()
-    TriggerEvent('ox_inventory:currentWeapon', weapon)
-end
-
 RegisterNUICallback('armasvip:previewSkin', function(data, cb)
     data = type(data) == 'table' and data or {}
     local grantId = tonumber(data.grantId)
@@ -23,8 +17,6 @@ RegisterNUICallback('armasvip:previewSkin', function(data, cb)
 end)
 
 RegisterNUICallback('armasvip:cancelSkinPreview', function(_, cb)
-    restorePersistedSkin()
+    TriggerEvent('armasvip:client:restorePersistedSkin')
     cb(true)
 end)
-
-RegisterNetEvent('armasvip:client:restorePersistedSkin', restorePersistedSkin)

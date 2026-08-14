@@ -92,3 +92,11 @@ function ArmasVipSkins.IsCompatible(weaponName, skinId)
     end
     return false
 end
+
+-- Expose support to the NUI weapon catalog so unsupported/custom weapons do not
+-- advertise runtime skins that the engine cannot actually apply.
+if ArmasVipData and type(ArmasVipData.weapons) == 'table' then
+    for _, weapon in ipairs(ArmasVipData.weapons) do
+        weapon.skinSupported = ArmasVipSkins.GetTexture(weapon.name) ~= nil
+    end
+end

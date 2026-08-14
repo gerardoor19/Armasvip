@@ -1,6 +1,7 @@
 local currentWeapon = nil
 local applyToken = 0
 local activeReplacement = nil
+local runtimeEngine = nil
 
 local skinTranslationKeys = {
     'ui_skin_studio', 'ui_skin_studio_subtitle', 'ui_skin_open', 'ui_skin_close',
@@ -9,6 +10,10 @@ local skinTranslationKeys = {
     'ui_skin_not_supported', 'ui_skin_inspect_hint', 'ui_skin_rarity_common',
     'ui_skin_rarity_rare', 'ui_skin_rarity_epic', 'ui_skin_rarity_legendary',
 }
+
+local function skinConfig()
+    return type(Config.Skins) == 'table' and Config.Skins or {}
+end
 
 local function uiTranslations()
     local result = {}
@@ -19,15 +24,18 @@ end
 local function clearReplacement()
     if not activeReplacement then return end
 
-    AddReplaceTexture(
-        activeReplacement.ytd,
-        activeReplacement.texture,
-        activeReplacement.ytd,
-        activeReplacement.texture
-    )
-
-    if activeReplacement.dui then DestroyDui(activeReplacement.dui) end
+    RemoveReplaceTexture(activeReplacement.ytd, activeReplacement.texture)
     activeReplacement = nil
+end
+
+local function destroyRuntimeEngine()
+    clearReplacement()
+
+    if runtimeEngine and runtimeEngine.dui then
+        DestroyDui(runtimeEngine.dui)
+    end
+
+    runtimeEngine = nil
 end
 
 local function localNuiUrl(path)
@@ -47,15 +55,68 @@ local function skinUrl(skin)
         return localNuiUrl(source.path)
     end
 
-    if source.type == 'url' and Config.Skins.AllowExternalUrls == true then
+    if source.type == 'url' and skinConfig().AllowExternalUrls == true then
         return source.url
     end
 
     return nil
 end
 
+local function ensureRuntimeEngine(url)
+    if runtimeEngine and runtimeEngine.dui and IsDuiAvailable(runtimeEngine.dui) then
+        if runtimeEngine.url ~= url then
+            SetDuiUrl(runtimeEngine.dui, url)
+            runtimeEngine.url = url
+        end
+        return runtimeEngine
+    end
+
+    if runtimeEngine and runtimeEngine.dui then
+        DestroyDui(runtimeEngine.dui)
+        runtimeEngine = nil
+    end
+
+    local settings = skinConfig()
+    local size = math.max(128, math.min(1024, tonumber(settings.TextureSize) or 512))
+    local dui = CreateDui(url, size, size)
+    local timeout = GetGameTimer() + math.max(1000, tonumber(settings.DuiTimeoutMs) or 5000)
+
+    while dui and not IsDuiAvailable(dui) and GetGameTimer() < timeout do Wait(0) end
+    if not dui or not IsDuiAvailable(dui) then
+        if dui then DestroyDui(dui) end
+        return nil
+    end
+
+    -- One runtime TXD/DUI pair is reused for the whole resource lifetime. Creating
+    -- a fresh TXD on every skin switch would leave dictionaries resident in the
+    -- client session because FiveM has no matching DestroyRuntimeTxd native.
+    local runtimeTxdName = ('armasvip_skin_runtime_%s'):format(GetGameTimer())
+    local runtimeTxd = CreateRuntimeTxd(runtimeTxdName)
+    if not runtimeTxd then
+        DestroyDui(dui)
+        return nil
+    end
+
+    local handle = GetDuiHandle(dui)
+    local runtimeTexture = CreateRuntimeTextureFromDuiHandle(runtimeTxd, 'skin', handle)
+    if not runtimeTexture then
+        DestroyDui(dui)
+        return nil
+    end
+
+    runtimeEngine = {
+        dui = dui,
+        url = url,
+        txdName = runtimeTxdName,
+        textureName = 'skin',
+    }
+
+    return runtimeEngine
+end
+
 local function applyRuntimeSkin(weaponName, skinId)
-    if Config.Skins.Enabled == false then
+    local settings = skinConfig()
+    if settings.Enabled == false then
         clearReplacement()
         return false
     end
@@ -80,34 +141,24 @@ local function applyRuntimeSkin(weaponName, skinId)
         return true
     end
 
-    clearReplacement()
-
     local url = skinUrl(skin)
-    if not url then return false end
-
-    local size = math.max(128, math.min(1024, tonumber(Config.Skins.TextureSize) or 512))
-    local dui = CreateDui(url, size, size)
-    local timeout = GetGameTimer() + math.max(1000, tonumber(Config.Skins.DuiTimeoutMs) or 5000)
-
-    while dui and not IsDuiAvailable(dui) and GetGameTimer() < timeout do Wait(0) end
-    if not dui or not IsDuiAvailable(dui) then
-        if dui then DestroyDui(dui) end
+    if not url then
+        clearReplacement()
         return false
     end
 
-    local runtimeTxdName = ('armasvip_skin_%s'):format(GetGameTimer())
-    local runtimeTxd = CreateRuntimeTxd(runtimeTxdName)
-    local handle = GetDuiHandle(dui)
-    CreateRuntimeTextureFromDuiHandle(runtimeTxd, 'skin', handle)
-    AddReplaceTexture(mapping.ytd, mapping.texture, runtimeTxdName, 'skin')
+    clearReplacement()
+
+    local engine = ensureRuntimeEngine(url)
+    if not engine then return false end
+
+    AddReplaceTexture(mapping.ytd, mapping.texture, engine.txdName, engine.textureName)
 
     activeReplacement = {
         weapon = weaponName,
         skinId = skin.id,
         ytd = mapping.ytd,
         texture = mapping.texture,
-        dui = dui,
-        runtimeTxdName = runtimeTxdName,
     }
 
     return true
@@ -146,6 +197,16 @@ end
 
 AddEventHandler('ox_inventory:currentWeapon', function(weapon)
     currentWeapon = weapon
+    refreshCurrentSkin()
+end)
+
+-- ox_inventory may already have a weapon equipped when only ArmasVIP is restarted.
+-- Bootstrap the current slot so persistence works without forcing a re-equip.
+CreateThread(function()
+    Wait(1000)
+    if GetResourceState('ox_inventory') ~= 'started' then return end
+
+    currentWeapon = exports.ox_inventory:getCurrentWeapon()
     refreshCurrentSkin()
 end)
 
@@ -200,7 +261,7 @@ local function showAdminSkinManager()
                     local skinValue = skin
                     local isUnlocked = unlocked[skinValue.id] == true
                     local isRequired = false
-                    for _, defaultId in ipairs(Config.Skins.DefaultUnlocked or {}) do
+                    for _, defaultId in ipairs(skinConfig().DefaultUnlocked or {}) do
                         if defaultId == skinValue.id then isRequired = true break end
                     end
                     if skinValue.id == ArmasVipSkins.Default then isRequired = true end
@@ -255,5 +316,5 @@ RegisterNetEvent('armasvip:manageSkins', showAdminSkinManager)
 
 AddEventHandler('onResourceStop', function(resource)
     if resource ~= GetCurrentResourceName() then return end
-    clearReplacement()
+    destroyRuntimeEngine()
 end)

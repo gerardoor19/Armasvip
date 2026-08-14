@@ -19,6 +19,7 @@ client_scripts {
     'client/menu.lua',
     'client/vip_durability.lua',
     'client/skins.lua',
+    'client/preview.lua',
     'client/inspect.lua',
 }
 

@@ -18,6 +18,7 @@ export interface Weapon {
   ammoname: string | null;
   throwable: boolean;
   components: string[];
+  skinSupported?: boolean;
 }
 
 export interface WeaponTint {

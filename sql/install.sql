@@ -27,3 +27,11 @@ CREATE TABLE IF NOT EXISTS `armasvip_cosmetics` (
   UNIQUE KEY `uq_armasvip_cosmetic` (`grant_id`, `cosmetic_type`, `cosmetic_value`),
   KEY `idx_armasvip_cosmetic_grant` (`grant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `armasvip_skin_state` (
+  `grant_id` BIGINT UNSIGNED NOT NULL,
+  `skin_id` VARCHAR(80) NOT NULL DEFAULT 'default',
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`grant_id`),
+  KEY `idx_armasvip_skin_id` (`skin_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

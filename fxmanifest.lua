@@ -3,8 +3,8 @@ game 'gta5'
 lua54 'yes'
 
 author 'ArmasVIP Contributors'
-description 'Persistent VIP weapon ownership and management for FiveM'
-version '2.3.1'
+description 'Persistent VIP weapon ownership, runtime skins and customization for FiveM roleplay servers'
+version '2.4.0'
 
 ox_lib 'locale'
 
@@ -12,11 +12,15 @@ shared_scripts {
     '@ox_lib/init.lua',
     'config/config.lua',
     'shared/weapons.lua',
+    'shared/skins.lua',
 }
 
 client_scripts {
     'client/menu.lua',
     'client/vip_durability.lua',
+    'client/skins.lua',
+    'client/preview.lua',
+    'client/inspect.lua',
 }
 
 server_scripts {
@@ -24,6 +28,7 @@ server_scripts {
     'server/permissions.lua',
     'server/identity.lua',
     'server/grants.lua',
+    'server/skins.lua',
     'server/protection.lua',
     'server/callbacks.lua',
     'server/commands.lua',

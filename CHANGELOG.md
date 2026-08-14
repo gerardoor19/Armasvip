@@ -2,6 +2,31 @@
 
 All notable changes to ArmasVIP are documented here.
 
+## [2.4.0] - 2026-08-14
+
+### Added
+- Weapon Studio inside the personal VIP arsenal with preview-before-equip skin selection.
+- Persistent skin state per VIP grant with server-side ownership, compatibility and unlock validation.
+- Bundled runtime skin renderer that requires no Blender or external image hosting.
+- Static Carbon and Royal Gold presets.
+- Animated Galaxy Flow, Inferno and Electric Pulse presets.
+- Administrator skin unlock manager through `/armasvipskins`.
+- VIP weapon inspect command/key mapping (`/vipinspect`, `I` by default).
+- Local asset and optional external URL skin source support for extensions.
+- `docs/WEAPON_STUDIO.md` with architecture, extension instructions and rendering limitations.
+
+### Changed
+- Resource version bumped to 2.4.0.
+- Personal cosmetics now cover native tints and persistent runtime skins.
+- Installation documentation clarifies that bundled Weapon Studio skins require no Node.js, npm or Blender for server owners.
+
+### Security
+- Skin selection is server-authoritative; the client cannot grant itself a locked skin.
+- External skin URLs are disabled by default.
+
+### Known limitation
+- FiveM runtime texture replacement is client-local and texture-name based. ArmasVIP does not claim fully per-instance remote-player skin synchronization when multiple players use the same GTA texture simultaneously.
+
 ## [2.3.1] - 2026-08-12
 
 ### Added
@@ -14,7 +39,7 @@ All notable changes to ArmasVIP are documented here.
 - Normal server installation uses the versioned GitHub Release asset and requires no Node.js, npm or NUI build step.
 - Server owners select the language through `setr ox:locale es` or `setr ox:locale en`.
 - Runtime package creation is allow-list based to prevent development files from leaking into releases.
-- README and installation documentation now clearly separate server installation from contributor/frontend development.
+- README and installation documentation clearly separate server installation from contributor/frontend development.
 
 ## [2.3.0] - 2026-08-11
 

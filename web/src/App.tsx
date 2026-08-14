@@ -8,7 +8,7 @@ import { CategorySidebar } from './components/CategorySidebar';
 import { SearchBar } from './components/SearchBar';
 import { WeaponGrid } from './components/WeaponGrid';
 import { WeaponDetail } from './components/WeaponDetail';
-import { OwnedArsenal } from './components/OwnedArsenal';
+import { UnifiedOwnedArsenal } from './components/UnifiedOwnedArsenal';
 import { useOwnedArsenalStore } from './store/useOwnedArsenalStore';
 
 export default function App() {
@@ -23,16 +23,13 @@ export default function App() {
   useNuiEvent<OwnedArsenalPayload>('openOwned', (payload) => { close(); openOwned(payload); });
   useNuiEvent('close', () => { close(); closeOwned(); });
 
-  const handleEscape = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && (isOpen || ownedOpen)) {
-        void fetchNui('armasvip:close');
-        close();
-        closeOwned();
-      }
-    },
-    [isOpen, ownedOpen, close, closeOwned],
-  );
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && (isOpen || ownedOpen)) {
+      void fetchNui('armasvip:close');
+      close();
+      closeOwned();
+    }
+  }, [isOpen, ownedOpen, close, closeOwned]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleEscape);
@@ -42,38 +39,18 @@ export default function App() {
   return (
     <AnimatePresence>
       {ownedOpen && (
-        <motion.div
-          key="owned"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="vip-backdrop flex h-full w-full items-center justify-center"
-        >
-          <OwnedArsenal />
+        <motion.div key="owned" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="vip-backdrop relative flex h-full w-full items-center justify-center">
+          <UnifiedOwnedArsenal />
         </motion.div>
       )}
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="vip-backdrop flex h-full w-full items-center justify-center"
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 10 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="flex h-[min(640px,90vh)] w-[min(980px,94vw)] overflow-hidden rounded-2xl border border-vip-border bg-vip-panel/85 shadow-[0_18px_55px_rgba(0,0,0,0.35)]"
-          >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="vip-backdrop flex h-full w-full items-center justify-center">
+          <motion.div initial={{ opacity: 0, scale: 0.96, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 10 }} transition={{ duration: 0.18, ease: 'easeOut' }} className="flex h-[min(680px,91vh)] w-[min(1120px,95vw)] overflow-hidden rounded-2xl border border-vip-border bg-vip-panel/85 shadow-[0_18px_55px_rgba(0,0,0,0.35)]">
             <div className="flex min-w-0 flex-1 flex-col">
               <Header />
               <div className="flex min-h-0 flex-1">
                 <CategorySidebar />
-                <div className="flex min-w-0 flex-1 flex-col gap-3 p-5">
-                  <SearchBar />
-                  <WeaponGrid />
-                </div>
+                <div className="flex min-w-0 flex-1 flex-col gap-3 p-5"><SearchBar /><WeaponGrid /></div>
                 <WeaponDetail />
               </div>
             </div>

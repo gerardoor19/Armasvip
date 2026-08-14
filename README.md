@@ -4,15 +4,14 @@
 
 ### Professional VIP Weapon Management for FiveM Roleplay Servers
 
-**Open-source · Server-authoritative · ES/EN · Install-ready GitHub Releases**
+**Persistent ownership · Weapon Studio · Animated runtime skins · ES/EN · Open source**
 
-![Version](https://img.shields.io/badge/version-2.3.1-orange)
+![Version](https://img.shields.io/badge/version-2.4.0-orange)
 ![FiveM](https://img.shields.io/badge/platform-FiveM-blue)
 ![Roleplay](https://img.shields.io/badge/server-Roleplay-purple)
 ![License](https://img.shields.io/badge/license-GPL--3.0-green)
 ![Languages](https://img.shields.io/badge/languages-ES%20%7C%20EN-brightgreen)
 ![Inventory](https://img.shields.io/badge/inventory-ox__inventory-lightgrey)
-![Database](https://img.shields.io/badge/database-oxmysql-lightgrey)
 
 **Qbox · QBCore · ESX · Standalone identity fallback**
 
@@ -20,53 +19,72 @@
 
 ## Overview
 
-**ArmasVIP is an open-source VIP weapon management script for FiveM roleplay servers.** It allows authorized server staff to assign persistent VIP weapons to players while keeping ownership, recovery and validation under server authority.
+**ArmasVIP is an open-source VIP weapon management script for FiveM roleplay servers.** Staff can assign persistent VIP weapons while ownership, recovery, cosmetics and validation remain server-authoritative.
 
-Each VIP weapon is backed by a persistent server-side grant. The physical `ox_inventory` item can be lost or removed while the ownership grant remains available for validated recovery, helping roleplay servers manage VIP weapon benefits without relying on the inventory item alone.
+Version 2.4 introduces **Weapon Studio**: players can preview and equip persistent skins from `/misarmasvip`, including bundled animated skins rendered at runtime. The bundled skin system does not require Blender, custom weapon models or external image hosting.
 
-The project is fully open source and distributed through clean, versioned GitHub Release packages.
+## Highlights
 
-## Features
-
-- Built specifically for FiveM roleplay server VIP weapon management
-- Persistent SQL-backed VIP weapon grants
-- ACE-protected administrative interface
-- Personal `/misarmasvip` arsenal
-- Anti-duplication recovery validation
-- Per-instance VIP metadata instead of global weapon overrides
-- Transfer protection through `ox_inventory` hooks
-- VIP durability handling without modifying normal copies of the same weapon
-- Persistent tint/camo entitlement validation
+- Persistent SQL-backed VIP weapon ownership
+- Personal `/misarmasvip` arsenal and validated recovery
+- ACE-protected administration
+- Per-instance VIP metadata and anti-duplication checks
+- Non-transferable VIP weapon protection through `ox_inventory` hooks
+- Persistent tints/camos and skin unlocks per grant
+- **Weapon Studio skin selector with preview-before-equip**
+- **Bundled static skins:** Carbon and Royal Gold
+- **Bundled animated skins:** Galaxy Flow, Inferno and Electric Pulse
+- Runtime skin renderer using FiveM DUI/runtime textures
+- VIP weapon inspect animation (`I` by default)
+- Administrator skin-unlock manager (`/armasvipskins`)
 - Qbox, QBCore, ESX and Rockstar-license identity support
-- React + TypeScript NUI source included in the repository
 - Full Spanish and English localization
+- React + TypeScript NUI source included
 - Automated runtime-only GitHub Release packages
+
+## Weapon Studio
+
+Open `/misarmasvip`, select a VIP weapon and enter **Weapon Studio**. A skin can be previewed before it is equipped. The server validates the grant, compatibility and unlock before saving the selected skin.
+
+Bundled skins are generated inside the resource:
+
+```text
+Original
+Carbon
+Royal Gold
+Galaxy Flow      [Animated]
+Inferno          [Animated]
+Electric Pulse   [Animated]
+```
+
+Server owners can choose which skins are unlocked by default in `Config.Skins.DefaultUnlocked`. Administrators can grant/remove skins per VIP weapon with `/armasvipskins`.
+
+### Runtime-skin scope
+
+Weapon Studio 2.4 uses GTA texture replacement through FiveM runtime textures. The selected skin is persistent and automatically reapplied to the player's equipped VIP weapon. **Runtime replacements are client-local rendering state; ArmasVIP does not claim per-instance remote-player skin synchronization when multiple players use the same GTA texture at the same time.**
+
+This limitation is documented intentionally rather than hidden. See [Weapon Studio](docs/WEAPON_STUDIO.md) for the architecture and extension options.
 
 ## Download & install
 
-> **Server owners do not need Node.js, npm or a frontend build step.**
+> **Server owners do not need Node.js, npm, Blender or a frontend build step.**
 
-Download the versioned asset from **GitHub Releases**:
-
-**`ArmasVIP-v2.3.1.zip`**
-
-The official asset already includes the compiled NUI and is ready to place in your FiveM resources directory.
+For stable versions, download the versioned `ArmasVIP-vX.Y.Z.zip` asset from **GitHub Releases**. The official asset already contains the compiled NUI.
 
 ```text
-ArmasVIP-v2.3.1.zip
-└── armasvip/
-    ├── fxmanifest.lua
-    ├── LICENSE
-    ├── client/
-    ├── config/
-    ├── locales/
-    ├── server/
-    ├── shared/
-    ├── sql/
-    └── web/dist/
+armasvip/
+├── fxmanifest.lua
+├── LICENSE
+├── client/
+├── config/
+├── locales/
+├── server/
+├── shared/
+├── sql/
+└── web/dist/
 ```
 
-Do **not** use GitHub's automatically generated `Source code (zip)` as the normal server package. Those archives contain the development repository, documentation and NUI source.
+Do **not** use GitHub's automatically generated `Source code (zip)` as the normal server package. It contains development files and NUI source.
 
 ### Requirements
 
@@ -77,23 +95,11 @@ Do **not** use GitHub's automatically generated `Source code (zip)` as the norma
 
 ### server.cfg
 
-Choose the language:
-
 ```cfg
 # Español
 setr ox:locale es
-```
 
-or:
-
-```cfg
-# English
-setr ox:locale en
-```
-
-Grant administrative access and start the resources in order:
-
-```cfg
+# Permission
 add_ace group.admin armasvip.admin allow
 
 ensure oxmysql
@@ -102,11 +108,9 @@ ensure ox_inventory
 ensure armasvip
 ```
 
+Use `setr ox:locale en` for English.
+
 Full setup: **[Installation Guide](docs/INSTALLATION.md)**.
-
-## Languages
-
-ArmasVIP includes complete Spanish and English localization. The selected `ox:locale` controls Lua menus, notifications, weapon categories, grant management, NUI labels, camos/tints and VIP item presentation.
 
 ## Showcase
 
@@ -126,19 +130,23 @@ ArmasVIP includes complete Spanish and English localization. The selected `ox:lo
 
 | Command | Purpose |
 |---|---|
-| `/armasvip` | Administrative VIP weapon assignment |
-| `/misarmasvip` | Personal VIP arsenal |
-| `/armasvipgestionar` | Persistent grant management |
+| `/armasvip` | Assign VIP weapons |
+| `/misarmasvip` | Personal arsenal and Weapon Studio |
+| `/armasvipgestionar` | Manage persistent VIP grants |
+| `/armasvipskins` | Administer skin unlocks per grant |
+| `/vipinspect` | Inspect the currently equipped VIP weapon |
+
+`vipinspect` is mapped to **I** by default and can be changed in `Config.Skins.Inspect`.
 
 ## Security model
 
-The server is authoritative. NUI visibility is never treated as authorization. Sensitive operations validate ACE permissions, player identity, grant ownership, weapon association and inventory state server-side.
+The NUI never grants ownership or cosmetics. The server validates player identity, grant ownership, skin existence, weapon compatibility and unlock state before persisting a selection. VIP ownership, anti-duplication and transfer protection remain server-authoritative.
 
 See **[Security Model](docs/SECURITY.md)**.
 
 ## Development
 
-The repository contains the editable React/TypeScript NUI source. Building the frontend is required **only for contributors who modify the NUI**, never for normal server installation.
+Normal installation requires no build tools. Contributors modifying the React/TypeScript NUI can build it from source; tagged releases build the NUI automatically in GitHub Actions.
 
 See **[Development Guide](docs/DEVELOPMENT.md)**.
 
@@ -146,6 +154,7 @@ See **[Development Guide](docs/DEVELOPMENT.md)**.
 
 - [Installation](docs/INSTALLATION.md)
 - [Configuration](docs/CONFIGURATION.md)
+- [Weapon Studio](docs/WEAPON_STUDIO.md)
 - [Security](docs/SECURITY.md)
 - [Development](docs/DEVELOPMENT.md)
 - [Changelog](CHANGELOG.md)
@@ -159,6 +168,6 @@ ArmasVIP is released under the **GNU General Public License v3.0 (GPL-3.0)**.
 
 <div align="center">
 
-**ArmasVIP — VIP weapon management for FiveM roleplay servers.**
+**ArmasVIP — persistent VIP ownership and runtime weapon customization for FiveM roleplay servers.**
 
 </div>

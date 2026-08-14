@@ -16,6 +16,7 @@ export function WeaponDetail() {
   const selectedTint = useArmasVipStore((s) => s.selectedTint);
   const setTint = useArmasVipStore((s) => s.setTint);
   const skins = useArmasVipStore((s) => s.skins);
+  const defaultSkins = useArmasVipStore((s) => s.defaultSkins);
   const selectedSkins = useArmasVipStore((s) => s.selectedSkins);
   const toggleSkin = useArmasVipStore((s) => s.toggleSkin);
   const isEquipping = useArmasVipStore((s) => s.isEquipping);
@@ -36,7 +37,10 @@ export function WeaponDetail() {
   }, [selectedWeapon, componentsMeta]);
 
   const categoryLabel = useMemo(() => (selectedWeapon ? categories.find((c) => c.id === selectedWeapon.category)?.label ?? selectedWeapon.category : ''), [selectedWeapon, categories]);
-  const compatibleSkins = useMemo(() => selectedWeapon ? skins.filter((skin) => skin.weapons === '*' || skin.weapons.some((name) => name.toUpperCase() === selectedWeapon.name.toUpperCase())) : [], [selectedWeapon, skins]);
+  const compatibleSkins = useMemo(() => {
+    if (!selectedWeapon || selectedWeapon.skinSupported === false) return [];
+    return skins.filter((skin) => skin.weapons === '*' || skin.weapons.some((name) => name.toUpperCase() === selectedWeapon.name.toUpperCase()));
+  }, [selectedWeapon, skins]);
 
   if (!selectedWeapon) {
     return <div className="flex w-96 shrink-0 flex-col items-center justify-center gap-3 border-l border-vip-border p-6 text-center"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-vip-panel-2 text-vip-muted"><Sparkles className="h-5 w-5" /></span><div><p className="text-sm font-medium text-vip-text">{t(translations, 'ui_no_weapon_selected')}</p><p className="mt-1 text-xs text-vip-muted">{t(translations, 'ui_select_weapon_hint')}</p></div></div>;
@@ -52,7 +56,17 @@ export function WeaponDetail() {
 
         <div><h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-vip-muted">{t(translations, 'ui_tint')}</h3><div className="flex flex-wrap gap-2">{tints.map((tint) => <button key={tint.index} onClick={() => setTint(tint.index)} title={tint.label} className={`relative flex h-6 w-6 items-center justify-center rounded-full border-2 transition-transform ${selectedTint === tint.index ? 'scale-110 border-vip-accent' : 'border-vip-border hover:scale-105'}`} style={{ backgroundColor: tintColors[tint.index] ?? '#6b7280' }}>{selectedTint === tint.index && <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-black/45"><Check className="h-2.5 w-2.5 text-white" strokeWidth={3} /></span>}</button>)}</div></div>
 
-        <div className="border-t border-white/[0.06] pt-4"><div className="flex items-center justify-between"><h3 className="text-[11px] font-semibold uppercase tracking-wide text-vip-muted">Skins VIP</h3><span className="text-[9px] text-vip-muted">{selectedSkins.length}/{compatibleSkins.length}</span></div><p className="mt-1 text-[10px] leading-relaxed text-vip-muted">Selecciona las skins que quedarán desbloqueadas al entregar esta arma.</p><div className="mt-2 grid grid-cols-2 gap-1.5">{compatibleSkins.map((skin) => { const active = selectedSkins.includes(skin.id); return <button key={skin.id} disabled={skin.id === 'default'} onClick={() => toggleSkin(skin.id)} className={`rounded-lg border px-2 py-2 text-left transition ${active ? 'border-[#21d4f4]/45 bg-[#21d4f4]/[0.08]' : 'border-white/[0.06] bg-white/[0.02]'}`}><div className="flex items-center justify-between gap-1"><span className="truncate text-[9px] font-semibold text-vip-text">{skin.label}</span>{active && <Check className="h-3 w-3 shrink-0 text-[#21d4f4]" />}</div><span className="mt-1 block text-[7px] uppercase tracking-wide text-vip-muted">{skin.animated ? t(translations, 'ui_skin_animated') : t(translations, 'ui_skin_static')}</span></button>; })}</div></div>
+        <div className="border-t border-white/[0.06] pt-4">
+          <div className="flex items-center justify-between"><h3 className="text-[11px] font-semibold uppercase tracking-wide text-vip-muted">Skins VIP</h3><span className="text-[9px] text-vip-muted">{selectedWeapon.skinSupported === false ? '0/0' : `${selectedSkins.length}/${compatibleSkins.length}`}</span></div>
+          {selectedWeapon.skinSupported === false ? (
+            <p className="mt-2 text-[10px] leading-relaxed text-vip-muted">{t(translations, 'ui_skin_not_supported')}</p>
+          ) : (
+            <>
+              <p className="mt-1 text-[10px] leading-relaxed text-vip-muted">Selecciona las skins que quedarán desbloqueadas al entregar esta arma. Las marcadas como incluidas por defecto no se pueden quitar.</p>
+              <div className="mt-2 grid grid-cols-2 gap-1.5">{compatibleSkins.map((skin) => { const active = selectedSkins.includes(skin.id); const required = defaultSkins.includes(skin.id); return <button key={skin.id} disabled={required} onClick={() => toggleSkin(skin.id)} className={`rounded-lg border px-2 py-2 text-left transition ${active ? 'border-[#21d4f4]/45 bg-[#21d4f4]/[0.08]' : 'border-white/[0.06] bg-white/[0.02]'} ${required ? 'cursor-default opacity-80' : ''}`}><div className="flex items-center justify-between gap-1"><span className="truncate text-[9px] font-semibold text-vip-text">{skin.label}</span>{active && <Check className="h-3 w-3 shrink-0 text-[#21d4f4]" />}</div><span className="mt-1 block text-[7px] uppercase tracking-wide text-vip-muted">{required ? 'Incluida por defecto' : skin.animated ? t(translations, 'ui_skin_animated') : t(translations, 'ui_skin_static')}</span></button>; })}</div>
+            </>
+          )}
+        </div>
       </div>
 
       <AnimatePresence>{lastResult && <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`mb-2 rounded-lg px-3 py-2 text-xs ${lastResult.ok ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'}`}>{lastResult.ok ? `${lastResult.label} ${t(translations, 'ui_selection_success')}` : t(translations, 'ui_selection_failed')}</motion.div>}</AnimatePresence>

@@ -21,26 +21,38 @@ local function uiTranslations()
     return result
 end
 
-local function clearReplacement()
-    if not activeReplacement then return end
+local function localNuiUrl(path)
+    local clean = tostring(path or ''):gsub('^/', '')
+    return ('https://cfx-nui-%s/web/dist/%s'):format(GetCurrentResourceName(), clean)
+end
 
-    RemoveReplaceTexture(activeReplacement.ytd, activeReplacement.texture)
-    activeReplacement = nil
+local function parkRuntimeEngine()
+    if not runtimeEngine or not runtimeEngine.dui or not IsDuiAvailable(runtimeEngine.dui) then return end
+
+    local idleUrl = localNuiUrl('skin-renderer.html?preset=carbon')
+    if runtimeEngine.url ~= idleUrl then
+        SetDuiUrl(runtimeEngine.dui, idleUrl)
+        runtimeEngine.url = idleUrl
+    end
+end
+
+local function clearReplacement(parkRenderer)
+    if activeReplacement then
+        RemoveReplaceTexture(activeReplacement.ytd, activeReplacement.texture)
+        activeReplacement = nil
+    end
+
+    if parkRenderer == true then parkRuntimeEngine() end
 end
 
 local function destroyRuntimeEngine()
-    clearReplacement()
+    clearReplacement(false)
 
     if runtimeEngine and runtimeEngine.dui then
         DestroyDui(runtimeEngine.dui)
     end
 
     runtimeEngine = nil
-end
-
-local function localNuiUrl(path)
-    local clean = tostring(path or ''):gsub('^/', '')
-    return ('https://cfx-nui-%s/web/dist/%s'):format(GetCurrentResourceName(), clean)
 end
 
 local function skinUrl(skin)
@@ -117,7 +129,7 @@ end
 local function applyRuntimeSkin(weaponName, skinId)
     local settings = skinConfig()
     if settings.Enabled == false then
-        clearReplacement()
+        clearReplacement(true)
         return false
     end
 
@@ -126,12 +138,12 @@ local function applyRuntimeSkin(weaponName, skinId)
     local mapping = weaponName and ArmasVipSkins.GetTexture(weaponName) or nil
 
     if not skin or skin.id == ArmasVipSkins.Default then
-        clearReplacement()
+        clearReplacement(true)
         return true
     end
 
     if not mapping or not ArmasVipSkins.IsCompatible(weaponName, skin.id) then
-        clearReplacement()
+        clearReplacement(true)
         return false
     end
 
@@ -143,11 +155,11 @@ local function applyRuntimeSkin(weaponName, skinId)
 
     local url = skinUrl(skin)
     if not url then
-        clearReplacement()
+        clearReplacement(true)
         return false
     end
 
-    clearReplacement()
+    clearReplacement(false)
 
     local engine = ensureRuntimeEngine(url)
     if not engine then return false end
@@ -170,13 +182,13 @@ local function refreshCurrentSkin()
     local weapon = currentWeapon
 
     if not weapon or type(weapon.metadata) ~= 'table' or weapon.metadata.armasvip ~= true then
-        clearReplacement()
+        clearReplacement(true)
         return
     end
 
     local grantId = tonumber(weapon.metadata.vipGrantId)
     if not grantId then
-        clearReplacement()
+        clearReplacement(true)
         return
     end
 
@@ -187,7 +199,7 @@ local function refreshCurrentSkin()
         if not currentWeapon or tonumber(currentWeapon.metadata and currentWeapon.metadata.vipGrantId) ~= grantId then return end
 
         if not response or response.ok ~= true or response.supported ~= true then
-            clearReplacement()
+            clearReplacement(true)
             return
         end
 

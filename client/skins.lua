@@ -225,6 +225,12 @@ RegisterNetEvent('armasvip:client:applyVipSkin', function(grantId, weaponName, s
     applyRuntimeSkin(weaponName or currentWeapon.name, skinId or ArmasVipSkins.Default)
 end)
 
+-- Private restoration hook used by the unified NUI. It deliberately avoids
+-- replaying ox_inventory's currentWeapon event, preventing cross-resource side effects.
+RegisterNetEvent('armasvip:client:restorePersistedSkin', function()
+    refreshCurrentSkin()
+end)
+
 RegisterNUICallback('armasvip:getSkinContext', function(_, cb)
     local response = lib.callback.await('armasvip:getSkinContext', false)
     response = type(response) == 'table' and response or { ok = false, reason = 'unknown' }

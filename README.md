@@ -112,6 +112,20 @@ Use `setr ox:locale en` for English.
 
 Full setup: **[Installation Guide](docs/INSTALLATION.md)**.
 
+## Showcase
+
+### Player VIP Arsenal
+
+<img width="100%" alt="ArmasVIP player arsenal" src="https://github.com/user-attachments/assets/7832c509-7bc8-4b1b-9c66-8e3a4541e611" />
+
+### Administrative Assignment
+
+<img width="100%" alt="ArmasVIP administrative weapon assignment" src="https://github.com/user-attachments/assets/06b94175-d97b-4f74-8f1f-fe27796cb70c" />
+
+### Persistent Customization
+
+<img width="100%" alt="ArmasVIP customization" src="https://github.com/user-attachments/assets/b92798b8-cfb7-4e08-97b7-2d749fdbb420" />
+
 ## Commands
 
 | Command | Purpose |

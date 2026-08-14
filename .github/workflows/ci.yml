@@ -9,6 +9,24 @@ permissions:
   contents: read
 
 jobs:
+  resource:
+    name: Resource validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Lua 5.4
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lua5.4
+      - name: Validate Lua syntax
+        run: |
+          find client config server shared -type f -name '*.lua' -print0 | xargs -0 -n1 luac5.4 -p
+      - name: Validate locale JSON
+        run: |
+          python3 -m json.tool locales/en.json >/dev/null
+          python3 -m json.tool locales/es.json >/dev/null
+
   nui:
     name: NUI build and lint
     runs-on: ubuntu-latest

@@ -61,6 +61,7 @@ export interface ArmasVipPayload {
   weapons: Weapon[];
   components: Record<string, WeaponComponentMeta>;
   tints: WeaponTint[];
+  defaultSkins?: string[];
   imageBase: string;
   translations: UiTranslations;
 }
@@ -69,6 +70,7 @@ export interface EquipRequest {
   weapon: string;
   components: string[];
   tint: number;
+  skins?: string[];
 }
 
 export interface OwnedVipGrant {

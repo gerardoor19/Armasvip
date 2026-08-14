@@ -26,15 +26,13 @@ local function clearReplacement()
         activeReplacement.texture
     )
 
-    if activeReplacement.dui and IsDuiAvailable(activeReplacement.dui) then
-        DestroyDui(activeReplacement.dui)
-    end
-
+    if activeReplacement.dui then DestroyDui(activeReplacement.dui) end
     activeReplacement = nil
 end
 
 local function localNuiUrl(path)
-    return ('https://cfx-nui-%s/%s'):format(GetCurrentResourceName(), path:gsub('^/', ''))
+    local clean = tostring(path or ''):gsub('^/', '')
+    return ('https://cfx-nui-%s/web/dist/%s'):format(GetCurrentResourceName(), clean)
 end
 
 local function skinUrl(skin)

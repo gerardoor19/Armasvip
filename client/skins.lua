@@ -9,6 +9,7 @@ local skinTranslationKeys = {
     'ui_skin_locked', 'ui_skin_apply', 'ui_skin_saved', 'ui_skin_failed',
     'ui_skin_not_supported', 'ui_skin_inspect_hint', 'ui_skin_rarity_common',
     'ui_skin_rarity_rare', 'ui_skin_rarity_epic', 'ui_skin_rarity_legendary',
+    'ui_skin_loading', 'ui_skin_load_failed', 'ui_skin_retry',
 }
 
 local function skinConfig()
@@ -99,9 +100,6 @@ local function ensureRuntimeEngine(url)
         return nil
     end
 
-    -- One runtime TXD/DUI pair is reused for the whole resource lifetime. Creating
-    -- a fresh TXD on every skin switch would leave dictionaries resident in the
-    -- client session because FiveM has no matching DestroyRuntimeTxd native.
     local runtimeTxdName = ('armasvip_skin_runtime_%s'):format(GetGameTimer())
     local runtimeTxd = CreateRuntimeTxd(runtimeTxdName)
     if not runtimeTxd then
@@ -212,8 +210,6 @@ AddEventHandler('ox_inventory:currentWeapon', function(weapon)
     refreshCurrentSkin()
 end)
 
--- ox_inventory may already have a weapon equipped when only ArmasVIP is restarted.
--- Bootstrap the current slot so persistence works without forcing a re-equip.
 CreateThread(function()
     Wait(1000)
     if GetResourceState('ox_inventory') ~= 'started' then return end
@@ -249,6 +245,61 @@ local function compatibleCatalog(weaponName, catalog)
     return output
 end
 
+local function openGrantSkinOptions(current, context, parentMenu)
+    if not current or current.skinSupported ~= true then
+        lib.notify({ title = locale('notify_title'), description = locale('skin_not_compatible'), type = 'error' })
+        return
+    end
+
+    local unlocked = {}
+    for _, value in ipairs(current.unlockedSkins or {}) do unlocked[value] = true end
+
+    local skinOptions = {}
+    for _, skin in ipairs(compatibleCatalog(current.weapon, context.catalog)) do
+        local skinValue = skin
+        local isUnlocked = unlocked[skinValue.id] == true
+        local isRequired = false
+        for _, defaultId in ipairs(skinConfig().DefaultUnlocked or {}) do
+            if defaultId == skinValue.id then isRequired = true break end
+        end
+        if skinValue.id == ArmasVipSkins.Default then isRequired = true end
+
+        skinOptions[#skinOptions + 1] = {
+            title = skinValue.label,
+            description = isUnlocked and locale('unlocked') or locale('locked'),
+            icon = skinValue.animated and 'wand-magic-sparkles' or 'palette',
+            iconColor = isUnlocked and '#22c55e' or '#9aa0ad',
+            onSelect = function()
+                if isRequired and isUnlocked then
+                    lib.notify({ title = locale('notify_title'), description = locale('skin_default_required'), type = 'error' })
+                    return
+                end
+
+                local result = lib.callback.await('armasvip:setSkinUnlock', false, {
+                    grantId = current.id,
+                    skinId = skinValue.id,
+                    unlocked = not isUnlocked,
+                })
+
+                if result and result.ok then
+                    lib.notify({
+                        title = locale('notify_title'),
+                        description = isUnlocked and locale('skin_removed') or locale('skin_unlocked'),
+                        type = 'success',
+                    })
+                    TriggerEvent('armasvip:manageSkinsForGrant', current.id)
+                else
+                    lib.notify({ title = locale('notify_title'), description = locale('skin_modify_failed'), type = 'error' })
+                end
+            end,
+        }
+    end
+
+    local menuId = ('armasvip_skin_grant_%s'):format(current.id)
+    lib.registerContext({ id = menuId, title = current.label, menu = parentMenu or 'armasvip_skin_manager', options = skinOptions })
+    lib.showContext(menuId)
+end
+
 local function showAdminSkinManager()
     local context = lib.callback.await('armasvip:getAdminSkinContext', false)
     if not context or context.ok ~= true then
@@ -265,53 +316,7 @@ local function showAdminSkinManager()
             icon = 'palette',
             disabled = current.skinSupported ~= true,
             onSelect = function()
-                local unlocked = {}
-                for _, value in ipairs(current.unlockedSkins or {}) do unlocked[value] = true end
-
-                local skinOptions = {}
-                for _, skin in ipairs(compatibleCatalog(current.weapon, context.catalog)) do
-                    local skinValue = skin
-                    local isUnlocked = unlocked[skinValue.id] == true
-                    local isRequired = false
-                    for _, defaultId in ipairs(skinConfig().DefaultUnlocked or {}) do
-                        if defaultId == skinValue.id then isRequired = true break end
-                    end
-                    if skinValue.id == ArmasVipSkins.Default then isRequired = true end
-
-                    skinOptions[#skinOptions + 1] = {
-                        title = skinValue.label,
-                        description = isUnlocked and locale('unlocked') or locale('locked'),
-                        icon = skinValue.animated and 'wand-magic-sparkles' or 'palette',
-                        iconColor = isUnlocked and '#22c55e' or '#9aa0ad',
-                        onSelect = function()
-                            if isRequired and isUnlocked then
-                                lib.notify({ title = locale('notify_title'), description = locale('skin_default_required'), type = 'error' })
-                                return
-                            end
-
-                            local result = lib.callback.await('armasvip:setSkinUnlock', false, {
-                                grantId = current.id,
-                                skinId = skinValue.id,
-                                unlocked = not isUnlocked,
-                            })
-
-                            if result and result.ok then
-                                lib.notify({
-                                    title = locale('notify_title'),
-                                    description = isUnlocked and locale('skin_removed') or locale('skin_unlocked'),
-                                    type = 'success',
-                                })
-                                showAdminSkinManager()
-                            else
-                                lib.notify({ title = locale('notify_title'), description = locale('skin_modify_failed'), type = 'error' })
-                            end
-                        end,
-                    }
-                end
-
-                local menuId = ('armasvip_skin_grant_%s'):format(current.id)
-                lib.registerContext({ id = menuId, title = current.label, menu = 'armasvip_skin_manager', options = skinOptions })
-                lib.showContext(menuId)
+                openGrantSkinOptions(current, context, 'armasvip_skin_manager')
             end,
         }
     end
@@ -325,6 +330,30 @@ local function showAdminSkinManager()
 end
 
 RegisterNetEvent('armasvip:manageSkins', showAdminSkinManager)
+
+RegisterNetEvent('armasvip:manageSkinsForGrant', function(grantId)
+    local context = lib.callback.await('armasvip:getAdminSkinContext', false)
+    if not context or context.ok ~= true then
+        lib.notify({ title = locale('notify_title'), description = locale('no_permission_short'), type = 'error' })
+        return
+    end
+
+    grantId = tonumber(grantId)
+    local selected = nil
+    for _, grant in ipairs(context.grants or {}) do
+        if tonumber(grant.id) == grantId then
+            selected = grant
+            break
+        end
+    end
+
+    if not selected then
+        lib.notify({ title = locale('notify_title'), description = locale('no_active_grants_description'), type = 'error' })
+        return
+    end
+
+    openGrantSkinOptions(selected, context, ('armasvip_grant_actions_%s'):format(selected.id))
+end)
 
 AddEventHandler('onResourceStop', function(resource)
     if resource ~= GetCurrentResourceName() then return end

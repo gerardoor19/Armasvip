@@ -106,7 +106,7 @@ ArmasVipSkins.Textures = {
     WEAPON_SAWNOFFSHOTGUN = { ytd = 'w_sg_sawnoff', texture = 'w_sg_sawnoff' },
     WEAPON_BULLPUPSHOTGUN = { ytd = 'w_sg_bullpupshotgun', texture = 'w_sg_bullpupshotgun' },
     WEAPON_ASSAULTSHOTGUN = { ytd = 'w_sg_assaultshotgun', texture = 'w_sg_assaultshotgun' },
-    WEAPON_DOUBLEBARRELSHOTGUN = { ytd = 'w_sg_doublebarrel', texture = 'w_sg_doublebarrel_dm' },
+    WEAPON_DBSHOTGUN = { ytd = 'w_sg_doublebarrel', texture = 'w_sg_doublebarrel_dm' },
 }
 
 local byId = {}

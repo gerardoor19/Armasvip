@@ -5,6 +5,7 @@ Config.Command = 'armasvip'
 Config.Ace = 'armasvip.admin'
 Config.PlayerCommand = 'misarmasvip'
 Config.ManageCommand = 'armasvipgestionar'
+Config.SkinManageCommand = 'armasvipskins'
 
 -- Legacy callback ammunition. Kept for backwards compatibility.
 Config.ChamberAmmo = 250
@@ -16,6 +17,30 @@ Config.VipChamberAmmo = 250
 Config.VipReserveAmmoOnEquip = 0
 
 Config.TintIndexes = { 0, 1, 2, 3, 4, 5, 6, 7 }
+
+-- Runtime Weapon Studio skins.
+-- The bundled skins use a local HTML/DUI renderer, so server owners do not need
+-- Blender, custom weapon models or external image hosting.
+Config.Skins = {
+    Enabled = true,
+    TextureSize = 512,
+    DuiTimeoutMs = 5000,
+    AllowExternalUrls = false,
+
+    -- These skins are automatically available on every compatible VIP grant.
+    -- Leave only 'default' here if every special skin should be granted manually.
+    DefaultUnlocked = { 'default', 'carbon', 'gold', 'galaxy' },
+
+    Inspect = {
+        Enabled = true,
+        Command = 'vipinspect',
+        Key = 'I',
+        Dict = 'shared@fidgets',
+        Clip = 'fidget_med_loop',
+        Duration = 2600,
+        Flag = 49,
+    },
+}
 
 -- Persistent owner identity.
 -- auto: qbx_core -> qb-core -> es_extended -> Rockstar license.

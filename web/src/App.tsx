@@ -9,6 +9,7 @@ import { SearchBar } from './components/SearchBar';
 import { WeaponGrid } from './components/WeaponGrid';
 import { WeaponDetail } from './components/WeaponDetail';
 import { OwnedArsenal } from './components/OwnedArsenal';
+import { SkinStudioOverlay } from './components/SkinStudioOverlay';
 import { useOwnedArsenalStore } from './store/useOwnedArsenalStore';
 
 export default function App() {
@@ -47,9 +48,10 @@ export default function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="vip-backdrop flex h-full w-full items-center justify-center"
+          className="vip-backdrop relative flex h-full w-full items-center justify-center"
         >
           <OwnedArsenal />
+          <SkinStudioOverlay />
         </motion.div>
       )}
       {isOpen && (

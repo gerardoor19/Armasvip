@@ -193,6 +193,15 @@ local function showGrantManager()
                             end,
                         },
                         {
+                            title = locale('manage_skins'),
+                            description = locale('manage_skins_description'),
+                            icon = 'wand-magic-sparkles',
+                            iconColor = '#21d4f4',
+                            onSelect = function()
+                                TriggerEvent('armasvip:manageSkinsForGrant', current.id)
+                            end,
+                        },
+                        {
                             title = locale('revoke_vip_weapon'),
                             description = locale('revoke_vip_weapon_description'),
                             icon = 'trash',
@@ -328,6 +337,16 @@ RegisterNUICallback('armasvip:ownedSetTint', function(data, cb)
     local result = lib.callback.await('armasvip:setActiveTint', false, data)
     local context = lib.callback.await('armasvip:getMyGrants', false)
     cb({ ok = result and result.ok == true, reason = result and result.reason, context = context and ownedPayload(context) or nil })
+end)
+
+CreateThread(function()
+    Wait(1000)
+    if GetResourceState('chat') == 'started' then
+        TriggerEvent('chat:addSuggestion', '/' .. tostring(Config.Command or 'armasvip'), locale('assign_vip_weapon'))
+        TriggerEvent('chat:addSuggestion', '/' .. tostring(Config.PlayerCommand or 'misarmasvip'), locale('ui_owned_my_arsenal'))
+        TriggerEvent('chat:addSuggestion', '/' .. tostring(Config.ManageCommand or 'armasvipgestionar'), locale('manage_vip_weapons'))
+        TriggerEvent('chat:addSuggestion', '/' .. tostring(Config.SkinManageCommand or 'armasvipskins'), locale('manage_skins'))
+    end
 end)
 
 CreateThread(function()

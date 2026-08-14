@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Check, Lock, Palette, Sparkles, WandSparkles, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { t } from '../lib/i18n';
@@ -39,6 +39,7 @@ function SkinSwatch({ skin, className = '' }: { skin: WeaponSkin; className?: st
 
 export function SkinStudioOverlay() {
   const [open, setOpen] = useState(false);
+  const [previewSkinId, setPreviewSkinId] = useState<string | null>(null);
   const grants = useOwnedArsenalStore((s) => s.grants);
   const skins = useOwnedArsenalStore((s) => s.skins);
   const selectedGrantId = useOwnedArsenalStore((s) => s.selectedGrantId);
@@ -57,8 +58,17 @@ export function SkinStudioOverlay() {
     [skins, selectedGrant],
   );
 
-  const activeSkin = compatibleSkins.find((skin) => skin.id === selectedGrant?.activeSkin) ?? compatibleSkins[0] ?? null;
+  useEffect(() => {
+    setPreviewSkinId(selectedGrant?.activeSkin ?? compatibleSkins[0]?.id ?? null);
+  }, [selectedGrant?.id, selectedGrant?.activeSkin, compatibleSkins]);
+
+  const previewSkin = compatibleSkins.find((skin) => skin.id === previewSkinId)
+    ?? compatibleSkins.find((skin) => skin.id === selectedGrant?.activeSkin)
+    ?? compatibleSkins[0]
+    ?? null;
   const unlocked = new Set(selectedGrant?.unlockedSkins ?? []);
+  const previewUnlocked = previewSkin ? unlocked.has(previewSkin.id) : false;
+  const previewActive = previewSkin?.id === selectedGrant?.activeSkin;
 
   if (!selectedGrant || skins.length === 0) return null;
 
@@ -66,7 +76,10 @@ export function SkinStudioOverlay() {
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setPreviewSkinId(selectedGrant.activeSkin ?? compatibleSkins[0]?.id ?? null);
+          setOpen(true);
+        }}
         className="absolute bottom-[calc(4vh+18px)] right-[calc(2.5vw+18px)] z-20 flex items-center gap-2 rounded-xl border border-[#ff7a00]/35 bg-[#11151c]/95 px-4 py-3 text-[10px] font-bold uppercase tracking-[0.13em] text-[#ff9b3d] shadow-[0_14px_34px_rgba(0,0,0,.38)] backdrop-blur-md transition hover:-translate-y-px hover:border-[#ff7a00]/60 hover:bg-[#171b23]"
       >
         <WandSparkles className="h-4 w-4" />
@@ -111,17 +124,18 @@ export function SkinStudioOverlay() {
                     {compatibleSkins.map((skin) => {
                       const isUnlocked = unlocked.has(skin.id);
                       const isActive = selectedGrant.activeSkin === skin.id;
+                      const isPreview = previewSkin?.id === skin.id;
                       return (
                         <button
                           key={skin.id}
-                          disabled={!isUnlocked || pending || selectedGrant.skinSupported === false}
-                          onClick={() => void setSkin(selectedGrant.id, skin.id)}
+                          disabled={selectedGrant.skinSupported === false}
+                          onClick={() => setPreviewSkinId(skin.id)}
                           className={`group grid w-full grid-cols-[74px_1fr_auto] items-center gap-3 rounded-xl border p-2.5 text-left transition ${
-                            isActive
+                            isPreview
                               ? 'border-[#ff7a00]/60 bg-[#ff7a00]/[0.075]'
                               : isUnlocked
                                 ? 'border-white/[0.055] bg-white/[0.02] hover:border-white/[0.14] hover:bg-white/[0.04]'
-                                : 'border-white/[0.04] bg-black/20 opacity-45'
+                                : 'border-white/[0.04] bg-black/20 opacity-55'
                           }`}
                         >
                           <div className="h-12 w-[74px] overflow-hidden rounded-lg border border-white/[0.05] bg-black/30">
@@ -157,15 +171,15 @@ export function SkinStudioOverlay() {
                       <h3 className="mt-4 text-lg font-semibold text-vip-text">{t(translations, 'ui_skin_not_supported')}</h3>
                     </div>
                   </div>
-                ) : activeSkin ? (
+                ) : previewSkin ? (
                   <>
                     <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-2xl border border-white/[0.06] bg-[#05070b]">
                       <div className="absolute inset-0 opacity-70">
-                        <SkinSwatch skin={activeSkin} className="h-full w-full" />
+                        <SkinSwatch skin={previewSkin} className="h-full w-full" />
                       </div>
                       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,.12),rgba(0,0,0,.82)_72%)]" />
                       <motion.img
-                        key={`${selectedGrant.id}-${activeSkin.id}`}
+                        key={`${selectedGrant.id}-${previewSkin.id}`}
                         initial={{ opacity: 0, scale: 0.95, y: 8 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         src={`${imageBase}${selectedGrant.weapon}.png`}
@@ -174,26 +188,31 @@ export function SkinStudioOverlay() {
                         draggable={false}
                       />
                       <div className="absolute left-5 top-5 z-20 flex items-center gap-2 rounded-lg border border-white/[0.08] bg-black/45 px-3 py-2 backdrop-blur-sm">
-                        {activeSkin.animated && <Sparkles className="h-3.5 w-3.5 text-[#21d4f4]" />}
-                        <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-white">{activeSkin.animated ? t(translations, 'ui_skin_animated') : t(translations, 'ui_skin_static')}</span>
+                        {previewSkin.animated && <Sparkles className="h-3.5 w-3.5 text-[#21d4f4]" />}
+                        <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-white">{previewSkin.animated ? t(translations, 'ui_skin_animated') : t(translations, 'ui_skin_static')}</span>
                       </div>
                     </div>
 
                     <div className="mt-5 grid grid-cols-[1fr_auto] items-end gap-5">
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="text-[24px] font-semibold text-vip-text">{activeSkin.label}</h3>
-                          <span className={`rounded-lg border px-2 py-1 text-[8px] font-bold uppercase tracking-[0.12em] ${rarityClass[activeSkin.rarity] ?? rarityClass.common}`}>
-                            {t(translations, `ui_skin_rarity_${activeSkin.rarity}`)}
+                          <h3 className="text-[24px] font-semibold text-vip-text">{previewSkin.label}</h3>
+                          <span className={`rounded-lg border px-2 py-1 text-[8px] font-bold uppercase tracking-[0.12em] ${rarityClass[previewSkin.rarity] ?? rarityClass.common}`}>
+                            {t(translations, `ui_skin_rarity_${previewSkin.rarity}`)}
                           </span>
                         </div>
-                        <p className="mt-2 max-w-[620px] text-[11px] leading-relaxed text-vip-muted">{activeSkin.description}</p>
+                        <p className="mt-2 max-w-[620px] text-[11px] leading-relaxed text-vip-muted">{previewSkin.description}</p>
                         <p className="mt-3 text-[9px] text-[#75e8fa]">{t(translations, 'ui_skin_inspect_hint')}</p>
                       </div>
-                      <div className="flex items-center gap-2 rounded-xl border border-[#ff7a00]/25 bg-[#ff7a00]/[0.06] px-4 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#ff9b3d]">
-                        <Check className="h-4 w-4" />
-                        {t(translations, 'ui_skin_equipped')}
-                      </div>
+                      <button
+                        type="button"
+                        disabled={!previewUnlocked || previewActive || pending}
+                        onClick={() => void setSkin(selectedGrant.id, previewSkin.id)}
+                        className="flex min-w-[150px] items-center justify-center gap-2 rounded-xl bg-gradient-to-b from-[#ff8a00] to-[#f26900] px-5 py-3.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white shadow-[0_10px_28px_rgba(255,112,0,.18)] transition hover:-translate-y-px hover:brightness-110 disabled:translate-y-0 disabled:cursor-default disabled:from-white/[0.055] disabled:to-white/[0.055] disabled:text-vip-muted disabled:shadow-none"
+                      >
+                        {!previewUnlocked ? <Lock className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+                        {!previewUnlocked ? t(translations, 'ui_skin_locked') : previewActive ? t(translations, 'ui_skin_equipped') : t(translations, 'ui_skin_apply')}
+                      </button>
                     </div>
                   </>
                 ) : null}

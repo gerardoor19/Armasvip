@@ -28,7 +28,8 @@ RegisterCommand(Config.ManageCommand, function(source)
     TriggerClientEvent('armasvip:manage', source)
 end, false)
 
-RegisterCommand(Config.SkinManageCommand, function(source)
+local skinManageCommand = Config.SkinManageCommand or 'armasvipskins'
+RegisterCommand(skinManageCommand, function(source)
     if source == 0 then return end
 
     if not isAllowed(source) then
